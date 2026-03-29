@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Cloud Adoption Helper</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --azure: #0078d4;
+  --azure-light: #50e6ff;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+input, select, textarea {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-family: var(--font); font-size: 13px; padding: 7px 10px;
+  outline: none; width: 100%; transition: border-color .15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--azure); }
+input.valid { border-color: var(--green); }
+input.invalid { border-color: var(--red); }
+label { color: var(--text2); font-size: 12px; font-weight: 500; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+button {
+  cursor: pointer; font-family: var(--font); font-size: 13px; font-weight: 500;
+  border-radius: 6px; border: 1px solid transparent; padding: 7px 14px; transition: all .15s;
+}
+.btn-primary { background: var(--azure); color: #fff; border-color: var(--azure); }
+.btn-primary:hover { background: #106ebe; }
+.btn-secondary { background: var(--surface2); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+.btn-ghost { background: transparent; color: var(--text2); border-color: transparent; }
+.btn-ghost:hover { color: var(--text); background: var(--surface2); }
+.btn-danger { background: transparent; color: var(--red); border-color: var(--red); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-xs { padding: 2px 8px; font-size: 11px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+.flex { display: flex; gap: 8px; }
+.flex-col { display: flex; flex-direction: column; gap: 8px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-4 { gap: 4px; }
+.gap-16 { gap: 16px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-4 { margin-bottom: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.w-full { width: 100%; }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.text-mono { font-family: var(--mono); }
+.text-azure { color: var(--azure-light); }
+.text-green { color: var(--green); }
+.text-yellow { color: var(--yellow); }
+.text-red { color: var(--red); }
+.text-muted { color: var(--text2); }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.bold { font-weight: 600; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Header */
+#header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 24px; position: sticky; top: 0; z-index: 100;
+}
+.header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 32px; height: 32px; background: var(--azure); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.logo-text { font-size: 15px; font-weight: 700; color: var(--text); }
+.logo-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.header-badges { display: flex; gap: 6px; }
+.badge {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+  letter-spacing: .3px; text-transform: uppercase;
+}
+.badge-blue { background: rgba(0,120,212,.15); color: var(--azure-light); border: 1px solid rgba(0,120,212,.3); }
+.badge-green { background: rgba(63,185,80,.1); color: var(--green); border: 1px solid rgba(63,185,80,.2); }
+
+/* Tabs */
+#tab-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 24px; overflow-x: auto; scrollbar-width: none;
+}
+#tab-nav::-webkit-scrollbar { display: none; }
+.tab-inner { max-width: 1400px; margin: 0 auto; display: flex; gap: 2px; }
+.tab-btn {
+  padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--text2);
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  transition: color .15s, border-color .15s; position: relative; top: 1px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--azure-light); border-bottom-color: var(--azure); }
+.tab-icon { font-size: 14px; }
+
+/* Main */
+#main { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Section headers */
+.section-header { margin-bottom: 20px; }
+.section-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.section-desc { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.section-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--surface2); }
+th { padding: 8px 12px; text-align: left; font-weight: 600; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid rgba(48,54,61,.5); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); }
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+
+/* Form group */
+.form-group { margin-bottom: 12px; }
+.form-row { display: grid; gap: 12px; }
+.form-row-2 { grid-template-columns: 1fr 1fr; }
+.form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.field-hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.field-error { font-size: 11px; color: var(--red); margin-top: 3px; display: none; }
+.field-error.show { display: block; }
+
+/* Generated name display */
+.name-display {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 12px 14px; font-family: var(--mono); font-size: 14px; color: var(--azure-light);
+  letter-spacing: .5px; display: flex; align-items: center; justify-content: space-between;
+  min-height: 44px; word-break: break-all;
+}
+.name-display.valid-name { border-color: var(--green); }
+.name-display.invalid-name { border-color: var(--red); color: var(--red); }
+
+/* Validation badge */
+.val-badge {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px;
+}
+.val-ok { background: rgba(63,185,80,.1); color: var(--green); border: 1px solid rgba(63,185,80,.2); }
+.val-warn { background: rgba(210,153,34,.1); color: var(--yellow); border: 1px solid rgba(210,153,34,.2); }
+.val-err { background: rgba(248,81,73,.1); color: var(--red); border: 1px solid rgba(248,81,73,.2); }
+
+/* CIDR visual */
+.cidr-bar-wrap { margin-top: 8px; background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+.cidr-bar { height: 100%; background: var(--azure); border-radius: 4px; transition: width .3s; }
+
+/* WAF radar */
+#waf-radar-wrap { display: flex; justify-content: center; margin: 20px 0; }
+
+/* Progress ring */
+.pillar-score { font-size: 28px; font-weight: 700; color: var(--azure-light); }
+.pillar-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; }
+
+/* Checklist */
+.check-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid rgba(48,54,61,.4);
+}
+.check-item:last-child { border-bottom: none; }
+.check-item input[type=checkbox] { width: 16px; height: 16px; min-width: 16px; margin-top: 1px; accent-color: var(--azure); cursor: pointer; }
+.check-text { flex: 1; }
+.check-q { font-size: 13px; color: var(--text); }
+.check-rec { font-size: 11px; color: var(--text2); margin-top: 3px; display: none; }
+.check-item.unchecked .check-rec { display: block; }
+
+/* Tag chips */
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px;
+  background: rgba(0,120,212,.1); border: 1px solid rgba(0,120,212,.25);
+  border-radius: 20px; font-size: 11px; color: var(--azure-light); cursor: default;
+}
+.tag-chip .remove { cursor: pointer; color: var(--text3); font-size: 13px; line-height: 1; }
+.tag-chip .remove:hover { color: var(--red); }
+
+/* Policy cards */
+.policy-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px; cursor: pointer; transition: border-color .15s;
+}
+.policy-card:hover { border-color: var(--azure); }
+.policy-card.selected { border-color: var(--azure); background: rgba(0,120,212,.05); }
+.policy-card .policy-effect {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.effect-deny { background: rgba(248,81,73,.15); color: var(--red); }
+.effect-audit { background: rgba(210,153,34,.15); color: var(--yellow); }
+.effect-modify { background: rgba(63,185,80,.15); color: var(--green); }
+.effect-dine { background: rgba(88,166,255,.15); color: var(--accent); }
+
+/* Landing zone tree */
+.mg-tree { padding-left: 0; }
+.mg-node { list-style: none; margin: 4px 0; }
+.mg-node-content {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; cursor: pointer; transition: border-color .15s;
+}
+.mg-node-content:hover { border-color: var(--azure); }
+.mg-children { padding-left: 24px; border-left: 1px solid var(--border); margin-left: 12px; }
+.mg-icon { font-size: 14px; }
+.sub-pill {
+  font-size: 10px; padding: 1px 6px; border-radius: 10px;
+  background: rgba(88,166,255,.1); color: var(--accent); border: 1px solid rgba(88,166,255,.2);
+}
+
+/* Cost bar chart */
+.cost-bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.cost-bar-label { width: 130px; font-size: 12px; color: var(--text2); flex-shrink: 0; text-align: right; }
+.cost-bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 14px; overflow: hidden; }
+.cost-bar-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+.cost-bar-val { width: 70px; font-size: 12px; font-family: var(--mono); color: var(--text); flex-shrink: 0; }
+
+/* Toast */
+#toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+.toast {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4); animation: slideIn .2s ease; min-width: 200px;
+}
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error { border-color: var(--red); color: var(--red); }
+.toast.info { border-color: var(--azure); color: var(--azure-light); }
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Code block */
+.code-block {
+  background: #010409; border: 1px solid var(--border); border-radius: 6px;
+  padding: 12px; font-family: var(--mono); font-size: 12px; color: #e6edf3;
+  overflow-x: auto; white-space: pre; line-height: 1.6;
+}
+
+/* Collapsible */
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 10px 0; user-select: none;
+}
+.collapsible-header:hover .coll-title { color: var(--accent); }
+.coll-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.coll-arrow { color: var(--text3); transition: transform .2s; font-size: 12px; }
+.collapsible-header.open .coll-arrow { transform: rotate(90deg); }
+.collapsible-body { display: none; padding-bottom: 8px; }
+.collapsible-body.open { display: block; }
+
+/* Divider */
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* Tooltip */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%); background: #1c2128; border: 1px solid var(--border);
+  color: var(--text); font-size: 11px; padding: 4px 8px; border-radius: 4px;
+  white-space: nowrap; z-index: 1000; pointer-events: none;
+}
+
+/* Scrollable container */
+.scroll-y { overflow-y: auto; }
+.max-h-400 { max-height: 400px; }
+.max-h-600 { max-height: 600px; }
+
+/* Sidebar layout */
+.sidebar-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
+.sidebar-layout-wide { display: grid; grid-template-columns: 380px 1fr; gap: 16px; }
+
+/* Number input */
+input[type=number] { -moz-appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* Range */
+input[type=range] { width: 100%; accent-color: var(--azure); }
+
+/* Toggle */
+.toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle input[type=checkbox] { width: 36px; height: 20px; appearance: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; position: relative; cursor: pointer; transition: background .2s; }
+.toggle input[type=checkbox]:checked { background: var(--azure); border-color: var(--azure); }
+.toggle input[type=checkbox]::after { content: ""; position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: left .2s; }
+.toggle input[type=checkbox]:checked::after { left: 18px; }
+.toggle-label { font-size: 13px; color: var(--text); }
+
+/* Print styles */
+@media print {
+  #header, #tab-nav, .section-actions, button, .tab-panel:not(.active) { display: none !important; }
+  body { background: #fff; color: #000; }
+  .card { background: #f9f9f9; border: 1px solid #ddd; }
+  .code-block { background: #f5f5f5; color: #000; }
+  * { color: inherit !important; }
+}
+
+@media (max-width: 900px) {
+  .sidebar-layout, .sidebar-layout-wide { grid-template-columns: 1fr; }
+  .form-row-3, .form-row-4 { grid-template-columns: 1fr 1fr; }
+  .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  #main { padding: 16px; }
+  .form-row-2, .form-row-3, .form-row-4 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .header-badges { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">☁️</div>
+      <div>
+        <div class="logo-text">Azure Cloud Adoption Helper</div>
+        <div class="logo-sub">Naming · IP Planning · Governance · Well-Architected</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-blue">CAF Aligned</span>
+      <span class="badge badge-green">WAF v2</span>
+      <span class="badge badge-blue">Offline Ready</span>
+    </div>
+  </div>
+</div>
+
+<div id="tab-nav">
+  <div class="tab-inner">
+    <button class="tab-btn active" onclick="switchTab('naming')" id="tab-btn-naming">
+      <span class="tab-icon">🏷️</span> Naming Convention
+    </button>
+    <button class="tab-btn" onclick="switchTab('cidr')" id="tab-btn-cidr">
+      <span class="tab-icon">🌐</span> IP / CIDR Planner
+    </button>
+    <button class="tab-btn" onclick="switchTab('tagging')" id="tab-btn-tagging">
+      <span class="tab-icon">🔖</span> Tagging Strategy
+    </button>
+    <button class="tab-btn" onclick="switchTab('landingzone')" id="tab-btn-landingzone">
+      <span class="tab-icon">🏗️</span> Landing Zone
+    </button>
+    <button class="tab-btn" onclick="switchTab('waf')" id="tab-btn-waf">
+      <span class="tab-icon">✅</span> WAF Checklist
+    </button>
+    <button class="tab-btn" onclick="switchTab('cost')" id="tab-btn-cost">
+      <span class="tab-icon">💰</span> Cost Estimator
+    </button>
+    <button class="tab-btn" onclick="switchTab('policy')" id="tab-btn-policy">
+      <span class="tab-icon">🛡️</span> Policy Catalog
+    </button>
+  </div>
+</div>
+
+<div id="main">
+
+<div class="tab-panel active" id="tab-naming">
+  <div class="section-header">
+    <div class="section-title">🏷️ Naming Convention Generator</div>
+    <div class="section-desc">Generate Azure resource names following the Cloud Adoption Framework (CAF) naming pattern: <span class="text-mono text-azure">{prefix}-{workload}-{env}-{region}-{instance}</span>. Enforces per-resource rules for length, characters, and scope.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportNaming('csv')">⬇ Export CSV</button>
+      <button class="btn-secondary btn-sm" onclick="exportNaming('json')">⬇ Export JSON</button>
+      <button class="btn-secondary btn-sm" onclick="printPage()">🖨 Print View</button>
+      <button class="btn-ghost btn-sm" onclick="clearNaming()">🗑 Clear</button>
+    </div>
+  </div>
+
+  <div class="sidebar-layout">
+    <!-- LEFT: Form -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">⚙️ Configuration</div>
+        <div class="form-group">
+          <label>Organisation / Company Prefix</label>
+          <input type="text" id="n-prefix" maxlength="6" placeholder="e.g. unify" oninput="generateName()" />
+          <div class="field-hint">2–6 chars, lowercase letters only</div>
+        </div>
+        <div class="form-group">
+          <label>Workload / Application Name</label>
+          <input type="text" id="n-workload" maxlength="20" placeholder="e.g. financeapp" oninput="generateName()" />
+          <div class="field-hint">Short, lowercase, no spaces</div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label>Environment</label>
+            <select id="n-env" onchange="generateName()">
+              <option value="prod">prod</option>
+              <option value="stg">stg (Staging)</option>
+              <option value="test">test</option>
+              <option value="dev">dev</option>
+              <option value="sbx">sbx (Sandbox)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Azure Region</label>
+            <select id="n-region" onchange="generateName()">
+              <option value="uan">UAE North (uan)</option>
+              <option value="uac">UAE Central (uac)</option>
+              <option value="eus">East US (eus)</option>
+              <option value="eus2">East US 2 (eus2)</option>
+              <option value="wus">West US (wus)</option>
+              <option value="wus2">West US 2 (wus2)</option>
+              <option value="cus">Central US (cus)</option>
+              <option value="neu">North Europe (neu)</option>
+              <option value="weu">West Europe (weu)</option>
+              <option value="uks">UK South (uks)</option>
+              <option value="ukw">UK West (ukw)</option>
+              <option value="frc">France Central (frc)</option>
+              <option value="gwc">Germany WC (gwc)</option>
+              <option value="swn">Switzerland N (swn)</option>
+              <option value="noe">Norway East (noe)</option>
+              <option value="swc">Sweden Central (swc)</option>
+              <option value="san">South Africa N (san)</option>
+              <option value="ea">East Asia (ea)</option>
+              <option value="sea">SE Asia (sea)</option>
+              <option value="aue">Australia East (aue)</option>
+              <option value="jpe">Japan East (jpe)</option>
+              <option value="krc">Korea Central (krc)</option>
+              <option value="inc">India Central (inc)</option>
+              <option value="cac">Canada Central (cac)</option>
+              <option value="brs">Brazil South (brs)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label>Instance / Sequence</label>
+            <input type="text" id="n-instance" value="001" maxlength="5" placeholder="001" oninput="generateName()" />
+          </div>
+          <div class="form-group">
+            <label>Resource Type</label>
+            <select id="n-restype" onchange="generateName()" style="font-size:12px">
+              <optgroup id="n-restype-opts"></optgroup>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Generated Name</div>
+        <div class="name-display" id="n-output">—</div>
+        <div class="flex items-center justify-between mt-8">
+          <div id="n-validation" class="text-sm text-muted"></div>
+          <button class="btn-secondary btn-sm" onclick="copyName()" id="n-copy-btn">📋 Copy</button>
+        </div>
+        <div id="n-info" class="mt-8 text-sm text-muted"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📏 Resource Rules</div>
+        <div id="n-rules" class="text-sm"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Bulk generator + saved names -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">🗂 Bulk Landing Zone Name Generator</div>
+        <div class="text-sm text-muted mb-8">Select multiple resource types to generate a complete naming sheet for a landing zone deployment.</div>
+        <div id="n-bulk-list" class="flex-col gap-4 max-h-400 scroll-y mb-8"></div>
+        <div class="flex gap-4 flex-wrap">
+          <button class="btn-primary btn-sm" onclick="generateBulk()">⚡ Generate All</button>
+          <button class="btn-ghost btn-sm" onclick="selectAllBulk()">☑ Select All</button>
+          <button class="btn-ghost btn-sm" onclick="deselectAllBulk()">☐ Deselect All</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💾 Saved Names <span class="text-muted text-xs" id="saved-count">(0)</span></div>
+        <div id="saved-names-list" class="flex-col gap-4 max-h-400 scroll-y"></div>
+        <div class="mt-8 flex gap-4">
+          <button class="btn-secondary btn-sm" onclick="saveCurrentName()">+ Save Current</button>
+          <button class="btn-ghost btn-sm" onclick="clearSavedNames()">🗑 Clear All</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📖 CAF Abbreviation Reference</div>
+        <input type="text" placeholder="Search resource types..." oninput="filterRefTable(this.value)" style="margin-bottom:10px" />
+        <div class="table-wrap max-h-400 scroll-y">
+          <table id="ref-table">
+            <thead><tr><th>Resource Type</th><th>Abbrev.</th><th>Max Length</th><th>Scope</th></tr></thead>
+            <tbody id="ref-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-cidr">
+  <div class="section-header">
+    <div class="section-title">🌐 IP Address & CIDR Planner</div>
+    <div class="section-desc">Design your Azure VNet address spaces with subnet planning, overlap detection, and hub-spoke topology presets. Based on CAF IP addressing guidelines.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportCIDR('json')">⬇ Export JSON</button>
+      <button class="btn-secondary btn-sm" onclick="exportCIDR('csv')">⬇ Export CSV</button>
+      <button class="btn-ghost btn-sm" onclick="clearCIDR()">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-8" style="gap:8px">
+    <button class="btn-secondary btn-sm" onclick="loadPreset('small')">🔹 Small Hub-Spoke Preset</button>
+    <button class="btn-secondary btn-sm" onclick="loadPreset('medium')">🔸 Medium Hub-Spoke Preset</button>
+    <button class="btn-secondary btn-sm" onclick="loadPreset('large')">🔶 Large Enterprise Preset</button>
+    <button class="btn-secondary btn-sm" onclick="loadPreset('sandbox')">🧪 Sandbox Preset</button>
+  </div>
+
+  <div class="sidebar-layout-wide">
+    <!-- LEFT: VNet + Subnet form -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">➕ Add Virtual Network</div>
+        <div class="form-group">
+          <label>VNet Name</label>
+          <input type="text" id="cidr-vnet-name" placeholder="e.g. vnet-hub-prod-uan-001" />
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label>Address Space (CIDR)</label>
+            <input type="text" id="cidr-vnet-cidr" placeholder="10.0.0.0/16" oninput="validateCIDRInput(this)" />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select id="cidr-vnet-role">
+              <option value="hub">Hub</option>
+              <option value="spoke">Spoke</option>
+              <option value="standalone">Standalone</option>
+              <option value="onprem">On-Premises</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Azure Region</label>
+          <select id="cidr-vnet-region">
+            <option value="UAE North">UAE North</option>
+            <option value="UAE Central">UAE Central</option>
+            <option value="East US">East US</option>
+            <option value="West Europe">West Europe</option>
+            <option value="UK South">UK South</option>
+            <option value="Australia East">Australia East</option>
+            <option value="Southeast Asia">Southeast Asia</option>
+          </select>
+        </div>
+        <button class="btn-primary btn-sm w-full" onclick="addVNet()">+ Add VNet</button>
+      </div>
+
+      <div class="card" id="cidr-subnet-form-card" style="display:none">
+        <div class="card-title">🔀 Add Subnet to: <span id="cidr-active-vnet-label" class="text-azure"></span></div>
+        <div class="form-group">
+          <label>Subnet Name</label>
+          <input type="text" id="cidr-snet-name" placeholder="e.g. snet-app-001" />
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label>Subnet CIDR</label>
+            <input type="text" id="cidr-snet-cidr" placeholder="10.0.1.0/24" oninput="validateCIDRInput(this)" />
+          </div>
+          <div class="form-group">
+            <label>Purpose</label>
+            <select id="cidr-snet-purpose">
+              <option value="GatewaySubnet">GatewaySubnet (VPN/ER)</option>
+              <option value="AzureFirewallSubnet">AzureFirewallSubnet</option>
+              <option value="AzureBastionSubnet">AzureBastionSubnet</option>
+              <option value="Workload">Workload</option>
+              <option value="Management">Management</option>
+              <option value="SharedServices">Shared Services</option>
+              <option value="Database">Database</option>
+              <option value="Web">Web / Frontend</option>
+              <option value="App">Application Layer</option>
+              <option value="PrivateEndpoints">Private Endpoints</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="toggle form-group" style="margin-top:4px">
+            <input type="checkbox" id="cidr-snet-nsg" checked />
+            <span class="toggle-label">NSG Required</span>
+          </div>
+          <div class="toggle form-group" style="margin-top:4px">
+            <input type="checkbox" id="cidr-snet-rt" />
+            <span class="toggle-label">Route Table</span>
+          </div>
+        </div>
+        <div id="cidr-snet-preview" class="mt-8"></div>
+        <button class="btn-primary btn-sm w-full mt-8" onclick="addSubnet()">+ Add Subnet</button>
+      </div>
+
+      <!-- Overlap checker -->
+      <div class="card">
+        <div class="card-title">⚠️ Overlap Detector</div>
+        <div id="cidr-overlap-result" class="text-sm text-muted">Add VNets to check for overlapping address spaces.</div>
+      </div>
+
+      <!-- Quick calculator -->
+      <div class="card">
+        <div class="card-title">🧮 Quick CIDR Calculator</div>
+        <div class="form-group">
+          <label>CIDR Block</label>
+          <input type="text" id="cidr-calc-input" placeholder="10.0.0.0/24" oninput="calcCIDR()" />
+        </div>
+        <div id="cidr-calc-result" class="text-sm flex-col gap-4"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: VNet list and visualization -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">🗺 Network Topology</div>
+        <div id="cidr-vnet-list" class="flex-col gap-4">
+          <div class="text-sm text-muted text-center" style="padding:24px">No VNets added yet. Use the form on the left or load a preset.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Address Space Summary</div>
+        <div class="table-wrap">
+          <table id="cidr-summary-table">
+            <thead><tr><th>VNet</th><th>CIDR</th><th>Role</th><th>Total IPs</th><th>Subnets</th><th>Used IPs</th><th>Free IPs</th></tr></thead>
+            <tbody id="cidr-summary-tbody"><tr><td colspan="7" class="text-muted text-center">No data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 All Subnets</div>
+        <div class="table-wrap">
+          <table id="cidr-subnet-table">
+            <thead><tr><th>VNet</th><th>Subnet Name</th><th>CIDR</th><th>Purpose</th><th>Usable IPs</th><th>First IP</th><th>Last IP</th><th>NSG</th><th>RT</th></tr></thead>
+            <tbody id="cidr-subnet-tbody"><tr><td colspan="9" class="text-muted text-center">No subnets</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💡 CAF IP Planning Best Practices</div>
+        <div class="flex-col gap-4 text-sm">
+          <div>🔹 <strong>Hub VNet:</strong> Allocate at least /16 (65,536 IPs) to accommodate future growth.</div>
+          <div>🔹 <strong>Spoke VNets:</strong> Use /20–/22 for typical workloads. Avoid over-allocating.</div>
+          <div>🔹 <strong>GatewaySubnet:</strong> Minimum /27 for VPN. Use /26 or /25 for ExpressRoute with redundancy.</div>
+          <div>🔹 <strong>AzureFirewallSubnet:</strong> Must be exactly named "AzureFirewallSubnet", minimum /26.</div>
+          <div>🔹 <strong>AzureBastionSubnet:</strong> Must be exactly "AzureBastionSubnet", minimum /26.</div>
+          <div>🔹 <strong>Reserved IPs:</strong> Azure reserves 5 IPs per subnet (first 4 + last). A /24 gives 251 usable IPs.</div>
+          <div>🔹 <strong>Avoid:</strong> 172.16.0.0/12 and 192.168.0.0/16 if using ExpressRoute to avoid BGP conflicts.</div>
+          <div>🔹 <strong>Non-overlapping:</strong> Ensure no address overlap between on-premises, VNets, and peered networks.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-tagging">
+  <div class="section-header">
+    <div class="section-title">🔖 Resource Tagging Strategy Builder</div>
+    <div class="section-desc">Design your Azure tagging taxonomy following CAF guidelines. Define required tags, allowed values, and generate Azure Policy enforcement snippets.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportTags('json')">⬇ Export JSON</button>
+      <button class="btn-secondary btn-sm" onclick="exportTags('csv')">⬇ Export CSV</button>
+      <button class="btn-secondary btn-sm" onclick="exportTags('policy')">⬇ Azure Policy JSON</button>
+      <button class="btn-secondary btn-sm" onclick="exportTags('markdown')">⬇ Markdown Table</button>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-8" style="gap:8px">
+    <button class="btn-secondary btn-sm" onclick="loadTagTemplate('caf')">📋 Load CAF Minimum Tags</button>
+    <button class="btn-secondary btn-sm" onclick="loadTagTemplate('extended')">📋 Load Extended Enterprise Tags</button>
+    <button class="btn-secondary btn-sm" onclick="loadTagTemplate('finops')">💰 Load FinOps Tags</button>
+    <button class="btn-secondary btn-sm" onclick="loadTagTemplate('security')">🔒 Load Security Tags</button>
+  </div>
+
+  <div class="sidebar-layout">
+    <!-- LEFT: Add tag form -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">➕ Add Tag</div>
+        <div class="form-group">
+          <label>Tag Key</label>
+          <input type="text" id="tag-key" placeholder="e.g. Environment" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="tag-category">
+            <option value="Governance">Governance</option>
+            <option value="Cost">Cost Management</option>
+            <option value="Security">Security & Compliance</option>
+            <option value="Operations">Operations</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="tag-desc" placeholder="What this tag is for" />
+        </div>
+        <div class="form-group">
+          <label>Allowed Values (comma-separated, blank for free-text)</label>
+          <input type="text" id="tag-values" placeholder="dev, test, stg, prod" />
+        </div>
+        <div class="form-group">
+          <label>Default Value (optional)</label>
+          <input type="text" id="tag-default" placeholder="e.g. dev" />
+        </div>
+        <div class="form-group">
+          <label>Applied At</label>
+          <select id="tag-scope">
+            <option value="Resource">Resource level</option>
+            <option value="ResourceGroup">Resource Group</option>
+            <option value="Subscription">Subscription</option>
+            <option value="All">All levels</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Enforcement</label>
+          <select id="tag-effect">
+            <option value="Deny">Deny (block deployment if missing)</option>
+            <option value="Audit">Audit (flag but allow)</option>
+            <option value="Modify">Modify (auto-add default value)</option>
+          </select>
+        </div>
+        <div class="toggle form-group">
+          <input type="checkbox" id="tag-required" checked />
+          <span class="toggle-label">Required Tag</span>
+        </div>
+        <button class="btn-primary btn-sm w-full mt-8" onclick="addTag()">+ Add Tag</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🧪 Tag Validator</div>
+        <div class="text-sm text-muted mb-8">Paste a JSON object to validate it against your tag schema.</div>
+        <textarea id="tag-validator-input" rows="6" placeholder='{"Environment":"prod","Owner":"admin@company.com","CostCenter":"IT-001"}'></textarea>
+        <button class="btn-secondary btn-sm w-full mt-8" onclick="validateTagObject()">Validate</button>
+        <div id="tag-validator-result" class="mt-8"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Tag table -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">🗂 Tag Schema (<span id="tag-count">0</span> tags)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tag Key</th>
+                <th>Category</th>
+                <th>Required</th>
+                <th>Allowed Values</th>
+                <th>Scope</th>
+                <th>Effect</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tag-tbody">
+              <tr><td colspan="7" class="text-muted text-center">No tags defined. Load a template or add tags.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 Azure Policy Snippet Preview</div>
+        <div class="text-sm text-muted mb-8">Preview the Azure Policy rule for the selected tag. Click a tag row to preview.</div>
+        <div id="tag-policy-preview" class="code-block">// Select a tag above to see its Azure Policy definition</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Tag Coverage Matrix</div>
+        <div id="tag-matrix" class="text-sm text-muted">Add tags to see the coverage matrix.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-landingzone">
+  <div class="section-header">
+    <div class="section-title">🏗️ Azure Landing Zone Planner</div>
+    <div class="section-desc">Plan your Azure management group hierarchy and subscription layout following the CAF Azure Landing Zone (ALZ) reference architecture.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportLZ('json')">⬇ Export JSON</button>
+      <button class="btn-secondary btn-sm" onclick="exportLZ('markdown')">⬇ Markdown Outline</button>
+      <button class="btn-secondary btn-sm" onclick="exportLZ('terraform')">⬇ Terraform Skeleton</button>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-8" style="gap:8px">
+    <button class="btn-primary btn-sm" onclick="loadLZTemplate('alz')">🏛 Load CAF ALZ Template</button>
+    <button class="btn-secondary btn-sm" onclick="loadLZTemplate('simple')">🔹 Load Simple Template</button>
+    <button class="btn-ghost btn-sm" onclick="clearLZ()">🗑 Clear</button>
+  </div>
+
+  <div class="sidebar-layout">
+    <!-- LEFT: Add nodes -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">➕ Add Management Group</div>
+        <div class="form-group">
+          <label>Display Name</label>
+          <input type="text" id="lz-mg-name" placeholder="e.g. Platform" />
+        </div>
+        <div class="form-group">
+          <label>ID / Short Name</label>
+          <input type="text" id="lz-mg-id" placeholder="e.g. platform" />
+        </div>
+        <div class="form-group">
+          <label>Parent Management Group</label>
+          <select id="lz-mg-parent"><option value="">— Tenant Root —</option></select>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="lz-mg-type">
+            <option value="Platform">Platform</option>
+            <option value="LandingZone">Landing Zone</option>
+            <option value="Sandbox">Sandbox</option>
+            <option value="Decommissioned">Decommissioned</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+        <button class="btn-primary btn-sm w-full" onclick="addMG()">+ Add Management Group</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">➕ Add Subscription</div>
+        <div class="form-group">
+          <label>Subscription Name</label>
+          <input type="text" id="lz-sub-name" placeholder="e.g. sub-connectivity-prod" />
+        </div>
+        <div class="form-group">
+          <label>Parent Management Group</label>
+          <select id="lz-sub-parent"><option value="">— Select MG —</option></select>
+        </div>
+        <div class="form-group">
+          <label>Purpose / Description</label>
+          <input type="text" id="lz-sub-purpose" placeholder="e.g. Connectivity hub resources" />
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label>Monthly Budget (USD)</label>
+            <input type="number" id="lz-sub-budget" placeholder="5000" />
+          </div>
+          <div class="form-group">
+            <label>Owner Email</label>
+            <input type="text" id="lz-sub-owner" placeholder="owner@company.com" />
+          </div>
+        </div>
+        <button class="btn-primary btn-sm w-full" onclick="addSubscription()">+ Add Subscription</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💡 ALZ Design Principles</div>
+        <div class="flex-col gap-4 text-sm">
+          <div>🔹 <strong>Platform MG:</strong> Contains Connectivity, Identity, Management subscriptions</div>
+          <div>🔹 <strong>Landing Zones MG:</strong> Corp (private) and Online (internet-facing) workloads</div>
+          <div>🔹 <strong>Sandbox MG:</strong> Developer experimentation, relaxed policies</div>
+          <div>🔹 <strong>Decommissioned MG:</strong> Subscriptions pending deletion</div>
+          <div>🔹 <strong>Policy Inheritance:</strong> Policies at MG level apply to all child subscriptions</div>
+          <div>🔹 <strong>Max Hierarchy:</strong> Azure supports up to 6 levels of MG nesting</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Tree visualization -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">🌲 Management Group Hierarchy</div>
+        <div id="lz-tree" class="mt-8">
+          <div class="text-sm text-muted text-center" style="padding:32px">Load a template or add management groups to visualize your hierarchy.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Subscription Inventory</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Subscription</th><th>Management Group</th><th>Purpose</th><th>Budget/mo</th><th>Owner</th><th></th></tr></thead>
+            <tbody id="lz-sub-tbody"><tr><td colspan="6" class="text-muted text-center">No subscriptions</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-waf">
+  <div class="section-header">
+    <div class="section-title">✅ Well-Architected Framework Review</div>
+    <div class="section-desc">Self-assess your Azure workload against the five WAF pillars. Score each pillar and get actionable recommendations aligned with Microsoft's Well-Architected Framework v2.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportWAF('json')">⬇ Export JSON</button>
+      <button class="btn-secondary btn-sm" onclick="exportWAF('csv')">⬇ Export CSV</button>
+      <button class="btn-secondary btn-sm" onclick="printPage()">🖨 Print Report</button>
+      <button class="btn-ghost btn-sm" onclick="resetWAF()">🔄 Reset All</button>
+    </div>
+  </div>
+
+  <div class="grid-4 mb-16" id="waf-pillar-scores"></div>
+
+  <div class="flex-col gap-16" style="align-items:center; margin-bottom:24px">
+    <div id="waf-radar-wrap">
+      <svg id="waf-radar" width="320" height="320" viewBox="0 0 320 320"></svg>
+    </div>
+    <div class="text-center">
+      <div style="font-size:36px; font-weight:700; color:var(--azure-light)" id="waf-overall">0%</div>
+      <div class="text-muted text-sm">Overall WAF Score</div>
+    </div>
+  </div>
+
+  <div class="flex-col gap-16" id="waf-pillars"></div>
+</div>
+
+<div class="tab-panel" id="tab-cost">
+  <div class="section-header">
+    <div class="section-title">💰 Quick Cost Estimator</div>
+    <div class="section-desc">Rapid ballpark estimates for Azure workloads. Prices are approximate (USD, per month). Always verify with the <a href="#" onclick="toast('Open portal.azure.com for the official calculator','info'); return false;">Azure Pricing Calculator</a>.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportCost('csv')">⬇ Export CSV</button>
+      <button class="btn-secondary btn-sm" onclick="exportCost('json')">⬇ Export JSON</button>
+    </div>
+  </div>
+
+  <div class="flex gap-8 flex-wrap mb-8">
+    <button class="btn-secondary btn-sm" onclick="loadCostTemplate('webapp')">🌐 Basic Web App</button>
+    <button class="btn-secondary btn-sm" onclick="loadCostTemplate('hub')">🌐 Hub Network</button>
+    <button class="btn-secondary btn-sm" onclick="loadCostTemplate('aks')">⚙️ AKS Microservices</button>
+    <button class="btn-secondary btn-sm" onclick="loadCostTemplate('data')">📊 Data Platform</button>
+    <button class="btn-ghost btn-sm" onclick="clearCost()">🗑 Clear</button>
+  </div>
+
+  <div class="sidebar-layout">
+    <!-- LEFT: Add resource -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">➕ Add Resource</div>
+        <div class="form-group">
+          <label>Resource Type</label>
+          <select id="cost-res-type" onchange="updateCostTiers()">
+            <optgroup id="cost-res-opts"></optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tier / SKU</label>
+          <select id="cost-res-sku"></select>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" id="cost-res-qty" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Custom $/mo (optional)</label>
+            <input type="number" id="cost-res-custom" placeholder="Auto" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Label / Notes</label>
+          <input type="text" id="cost-res-label" placeholder="e.g. Primary database server" />
+        </div>
+        <button class="btn-primary btn-sm w-full" onclick="addCostResource()">+ Add to Estimate</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ Environment Settings</div>
+        <div class="flex-col gap-8">
+          <div class="toggle">
+            <input type="checkbox" id="cost-show-annual" onchange="updateCostTotals()" />
+            <span class="toggle-label">Show Annual Totals</span>
+          </div>
+          <div class="form-group">
+            <label>Reserved Instance Discount</label>
+            <select id="cost-ri-discount" onchange="updateCostTotals()">
+              <option value="0">None (Pay-as-you-go)</option>
+              <option value="30">1-Year RI (~30% off compute)</option>
+              <option value="55">3-Year RI (~55% off compute)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Azure Hybrid Benefit</label>
+            <select id="cost-ahb" onchange="updateCostTotals()">
+              <option value="0">Not applied</option>
+              <option value="40">Applied to Windows VMs (~40% off)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Dev/Test Pricing</label>
+            <select id="cost-devtest" onchange="updateCostTotals()">
+              <option value="0">No</option>
+              <option value="50">Yes (50% off eligible resources)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Cost by Category</div>
+        <div id="cost-by-category"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Cost table + totals -->
+    <div class="flex-col">
+      <div class="card" style="padding:20px">
+        <div class="flex justify-between items-center mb-8">
+          <div class="card-title" style="margin:0">💵 Cost Summary</div>
+          <div>
+            <span style="font-size:28px; font-weight:700; color:var(--azure-light)" id="cost-total-monthly">$0</span>
+            <span class="text-muted text-sm">/month</span>
+            <span id="cost-total-annual-label" class="text-muted text-sm" style="display:none"></span>
+          </div>
+        </div>
+        <div id="cost-progress-chart" style="margin-bottom:16px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🗂 Resource Line Items</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Resource</th>
+                <th>Label</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Unit/mo</th>
+                <th>Total/mo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cost-tbody">
+              <tr><td colspan="7" class="text-muted text-center">No resources. Load a template or add manually.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚠️ Disclaimer</div>
+        <div class="text-sm text-muted">Prices shown are approximate USD estimates based on Azure public pricing as of early 2026 for East US region. Actual costs vary by region, commitment, negotiated discounts, and usage patterns. Always verify with the official <strong>Azure Pricing Calculator</strong> and your Microsoft account team before budget planning.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-policy">
+  <div class="section-header">
+    <div class="section-title">🛡️ Governance Policy Catalog</div>
+    <div class="section-desc">Browse CAF-recommended Azure Policy definitions. Select policies to build a custom Policy Initiative (Policy Set) for your landing zone.</div>
+    <div class="section-actions">
+      <button class="btn-secondary btn-sm" onclick="exportPolicies('json')">⬇ Export Initiative JSON</button>
+      <button class="btn-secondary btn-sm" onclick="exportPolicies('terraform')">⬇ Terraform Skeleton</button>
+      <button class="btn-ghost btn-sm" onclick="clearPolicySelection()">☐ Deselect All</button>
+    </div>
+  </div>
+
+  <div class="sidebar-layout">
+    <!-- LEFT: Filters + initiative -->
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">🔍 Filter Policies</div>
+        <div class="form-group">
+          <label>Search</label>
+          <input type="text" id="pol-search" placeholder="e.g. encryption, tags, region..." oninput="filterPolicies()" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="pol-category-filter" onchange="filterPolicies()">
+            <option value="">All Categories</option>
+            <option value="Naming">Naming</option>
+            <option value="Tagging">Tagging</option>
+            <option value="Region">Allowed Regions</option>
+            <option value="Compute">Compute / VM</option>
+            <option value="Networking">Networking</option>
+            <option value="Storage">Storage</option>
+            <option value="Security">Security</option>
+            <option value="Cost">Cost Control</option>
+            <option value="Monitoring">Monitoring</option>
+            <option value="Identity">Identity</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Effect</label>
+          <select id="pol-effect-filter" onchange="filterPolicies()">
+            <option value="">All Effects</option>
+            <option value="Deny">Deny</option>
+            <option value="Audit">Audit</option>
+            <option value="Modify">Modify</option>
+            <option value="DeployIfNotExists">DeployIfNotExists</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📦 Policy Initiative Builder</div>
+        <div class="form-group">
+          <label>Initiative Name</label>
+          <input type="text" id="pol-init-name" placeholder="e.g. corp-baseline-governance" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="pol-init-desc" rows="2" placeholder="Enterprise governance baseline policy set"></textarea>
+        </div>
+        <div class="text-sm text-muted mt-8">Selected: <strong id="pol-selected-count" class="text-azure">0</strong> policies</div>
+        <div id="pol-selected-chips" class="flex flex-wrap gap-4 mt-8"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Policy Rule Preview</div>
+        <div class="text-sm text-muted mb-8">Click a policy to preview its JSON rule.</div>
+        <div id="pol-preview" class="code-block" style="font-size:11px; max-height:300px; overflow-y:auto">// Click a policy to preview</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Policy cards -->
+    <div>
+      <div id="pol-grid" class="flex-col gap-4"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+<div id="toast-container"></div>
+<script>
+
+// ============================================================
+// DATA STORE
+// ============================================================
+const RESOURCE_TYPES = [
+  // General
+  {cat:"General",type:"Resource Group",abbr:"rg",max:90,scope:"Subscription",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"General",type:"Management Group",abbr:"mg",max:90,scope:"Tenant",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  // Compute
+  {cat:"Compute",type:"Virtual Machine (Windows)",abbr:"vm",max:15,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"Virtual Machine (Linux)",abbr:"vm",max:64,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"VM Scale Set",abbr:"vmss",max:64,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"AKS Cluster",abbr:"aks",max:63,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"App Service",abbr:"app",max:60,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"App Service Plan",abbr:"asp",max:40,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"Function App",abbr:"func",max:60,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"Container App",abbr:"ca",max:32,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"Container Registry",abbr:"cr",max:50,scope:"Global",chars:"alphanumeric only (no hyphens)",noHyphen:true,lcase:true},
+  {cat:"Compute",type:"Availability Set",abbr:"avail",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores",noHyphen:false,lcase:false},
+  {cat:"Compute",type:"Disk (Managed)",abbr:"disk",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores",noHyphen:false,lcase:false},
+  // Networking
+  {cat:"Networking",type:"Virtual Network",abbr:"vnet",max:64,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Subnet",abbr:"snet",max:80,scope:"VNet",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Network Security Group",abbr:"nsg",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Public IP Address",abbr:"pip",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Load Balancer (Internal)",abbr:"lbi",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Load Balancer (External)",abbr:"lbe",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Application Gateway",abbr:"agw",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Azure Firewall",abbr:"afw",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Route Table",abbr:"rt",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"VPN Gateway",abbr:"vpng",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"ExpressRoute Gateway",abbr:"ergw",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Bastion Host",abbr:"bas",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Private Endpoint",abbr:"pep",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Azure Front Door",abbr:"fd",max:64,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Traffic Manager Profile",abbr:"traf",max:63,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Network Interface (NIC)",abbr:"nic",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Networking",type:"Local Network Gateway",abbr:"lgw",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  // Storage
+  {cat:"Storage",type:"Storage Account",abbr:"st",max:24,scope:"Global",chars:"lowercase alphanumeric ONLY (no hyphens)",noHyphen:true,lcase:true,min:3},
+  {cat:"Storage",type:"Azure Data Lake Storage",abbr:"dls",max:24,scope:"Global",chars:"lowercase alphanumeric only",noHyphen:true,lcase:true,min:3},
+  {cat:"Storage",type:"Azure File Share",abbr:"share",max:63,scope:"Storage Account",chars:"lowercase alphanumeric, hyphens",noHyphen:false,lcase:true},
+  // Security
+  {cat:"Security",type:"Key Vault",abbr:"kv",max:24,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false,min:3},
+  {cat:"Security",type:"Managed Identity",abbr:"id",max:128,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores",noHyphen:false,lcase:false},
+  {cat:"Security",type:"Defender for Cloud",abbr:"mdc",max:64,scope:"Subscription",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  // Database
+  {cat:"Database",type:"Azure SQL Server",abbr:"sql",max:63,scope:"Global",chars:"lowercase alphanumeric, hyphens",noHyphen:false,lcase:true},
+  {cat:"Database",type:"Azure SQL Database",abbr:"sqldb",max:128,scope:"SQL Server",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Database",type:"Cosmos DB Account",abbr:"cosmos",max:44,scope:"Global",chars:"lowercase alphanumeric, hyphens",noHyphen:false,lcase:true},
+  {cat:"Database",type:"Azure Database for MySQL",abbr:"mysql",max:63,scope:"Global",chars:"lowercase alphanumeric, hyphens",noHyphen:false,lcase:true},
+  {cat:"Database",type:"Azure Database for PostgreSQL",abbr:"psql",max:63,scope:"Global",chars:"lowercase alphanumeric, hyphens",noHyphen:false,lcase:true},
+  {cat:"Database",type:"Azure Cache for Redis",abbr:"redis",max:63,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Database",type:"Azure Synapse Analytics",abbr:"syn",max:50,scope:"Global",chars:"lowercase alphanumeric only",noHyphen:true,lcase:true},
+  // Monitoring
+  {cat:"Monitoring",type:"Log Analytics Workspace",abbr:"log",max:63,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Monitoring",type:"Application Insights",abbr:"appi",max:260,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores, periods",noHyphen:false,lcase:false},
+  {cat:"Monitoring",type:"Azure Monitor Action Group",abbr:"ag",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores",noHyphen:false,lcase:false},
+  {cat:"Monitoring",type:"Azure Dashboard",abbr:"dash",max:160,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  // Integration
+  {cat:"Integration",type:"Service Bus Namespace",abbr:"sbns",max:50,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Integration",type:"Event Hub Namespace",abbr:"evhns",max:50,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Integration",type:"Event Grid Domain",abbr:"evgd",max:50,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Integration",type:"Logic App",abbr:"logic",max:80,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores",noHyphen:false,lcase:false},
+  {cat:"Integration",type:"API Management",abbr:"apim",max:50,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"Integration",type:"Data Factory",abbr:"adf",max:63,scope:"Global",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  // AI / ML
+  {cat:"AI & ML",type:"Azure OpenAI Service",abbr:"oai",max:64,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"AI & ML",type:"Azure AI Services",abbr:"cog",max:64,scope:"Resource Group",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+  {cat:"AI & ML",type:"Azure Machine Learning Workspace",abbr:"mlw",max:260,scope:"Resource Group",chars:"alphanumeric, hyphens, underscores",noHyphen:false,lcase:false},
+  // DevOps
+  {cat:"DevOps",type:"Azure DevOps Project",abbr:"devops",max:64,scope:"Organization",chars:"alphanumeric, hyphens, spaces",noHyphen:false,lcase:false},
+  {cat:"DevOps",type:"GitHub Repository",abbr:"repo",max:100,scope:"Organization",chars:"alphanumeric, hyphens",noHyphen:false,lcase:false},
+];
+
+const WAF_PILLARS = [
+  {
+    id: "reliability", name: "Reliability", color: "#50e6ff", icon: "💙",
+    items: [
+      {q:"Availability targets (SLA/SLO/SLA) defined and documented?", rec:"Define clear availability targets: 99.9% = 8.7hrs/yr downtime; 99.99% = 52min/yr. Align with business requirements."},
+      {q:"Resources deployed across multiple Availability Zones?", rec:"Use Availability Zones for zone-redundant deployments. Azure provides 99.99% SLA for zone-redundant services."},
+      {q:"Disaster Recovery plan documented and tested?", rec:"Document RPO/RTO targets. Test DR runbook at least quarterly. Use Azure Site Recovery for VM replication."},
+      {q:"Health probes and automated failover configured?", rec:"Configure load balancer health probes and Traffic Manager health checks for automatic failover."},
+      {q:"Circuit breaker and retry patterns implemented?", rec:"Implement retry with exponential backoff. Use Polly (.NET) or resilience4j (Java) for transient fault handling."},
+      {q:"Backup strategy defined with tested restoration?", rec:"Follow 3-2-1 backup rule. Test restoration monthly. Use Azure Backup with soft delete enabled."},
+      {q:"Dependencies mapped and failure modes analysed?", rec:"Document all external dependencies. Perform failure mode analysis (FMEA) for critical paths."},
+      {q:"Chaos engineering / fault injection tests conducted?", rec:"Use Azure Chaos Studio to introduce controlled failures and validate resilience mechanisms."},
+      {q:"Alerting configured for availability and latency thresholds?", rec:"Set Azure Monitor alerts for availability drops and P95/P99 latency thresholds before users are impacted."},
+      {q:"Data replication and geo-redundancy configured for stateful services?", rec:"Enable geo-redundant storage (GRS) for storage accounts. Use Active Geo-Replication for SQL databases."},
+      {q:"Deployment validation gates (canary/blue-green) in place?", rec:"Use deployment slots in App Service or canary releases in AKS to validate before full rollout."},
+      {q:"Capacity planning performed for peak loads?", rec:"Load test to 2x expected peak. Configure auto-scale rules with adequate headroom."},
+    ]
+  },
+  {
+    id: "security", name: "Security", color: "#f85149", icon: "🔴",
+    items: [
+      {q:"Identity-based access used instead of keys/secrets where possible?", rec:"Use Managed Identities for Azure resources. Avoid storing credentials in code or configuration files."},
+      {q:"Privileged Identity Management (PIM) configured for admin roles?", rec:"Enable PIM for all Privileged roles. Require MFA for elevation. Set maximum activation duration of 8 hours."},
+      {q:"Network segmentation with NSGs and private endpoints?", rec:"Deploy private endpoints for PaaS services. Use NSGs with deny-all default and explicit allow rules."},
+      {q:"All secrets stored in Azure Key Vault?", rec:"Centralise all secrets, certificates, and keys in Key Vault. Enable soft delete and purge protection."},
+      {q:"Encryption at rest and in transit enforced?", rec:"Enable Azure Disk Encryption. Enforce HTTPS-only. Use TLS 1.2 minimum. Enable transparent data encryption for databases."},
+      {q:"Microsoft Defender for Cloud enabled with secure score > 70%?", rec:"Enable Defender for Cloud on all subscriptions. Work through secure score recommendations by severity."},
+      {q:"Conditional Access policies enforcing MFA for all users?", rec:"Enforce MFA via Conditional Access for all users. Apply risk-based policies. Block legacy authentication."},
+      {q:"Azure Sentinel (or SIEM) configured for threat detection?", rec:"Deploy Microsoft Sentinel. Enable built-in analytics rules. Configure UEBA and threat intelligence integration."},
+      {q:"Vulnerability assessments running on VMs and containers?", rec:"Enable Defender for Servers for VM vulnerability assessment. Use Defender for Containers for image scanning."},
+      {q:"Security baseline applied to all new subscriptions?", rec:"Apply Azure Security Benchmark via Azure Policy. Enforce CIS or NIST 800-53 initiative at management group level."},
+      {q:"Incident response runbook documented?", rec:"Document IR process: detect, contain, eradicate, recover, lessons-learned. Test annually with tabletop exercise."},
+      {q:"Data classification and DLP policies applied?", rec:"Classify data using Microsoft Purview. Apply sensitivity labels and DLP policies for confidential data."},
+    ]
+  },
+  {
+    id: "cost", name: "Cost Optimization", color: "#d29922", icon: "🟡",
+    items: [
+      {q:"Reserved Instances or Savings Plans evaluated for stable workloads?", rec:"Analyse 30-day usage in Azure Cost Management. Commit 1-year RI for workloads with >75% usage consistency."},
+      {q:"Auto-scaling configured to match demand?", rec:"Configure VMSS, AKS cluster autoscaler, and App Service auto-scale rules. Set scale-in/out thresholds based on actual metrics."},
+      {q:"Idle and unused resources identified and remediated?", rec:"Run Azure Advisor monthly. Review unattached disks, stopped VMs, unused load balancers, and empty resource groups."},
+      {q:"Budget alerts and cost anomaly detection configured?", rec:"Set budgets at subscription and resource group level with 80%/100% email alerts. Enable anomaly alerts in Cost Management."},
+      {q:"Resource right-sizing performed based on actual utilisation?", rec:"Review Azure Advisor right-sizing recommendations. Right-size VMs running at <40% CPU for >30 days."},
+      {q:"Dev/Test environments use B-series or spot instances?", rec:"Use Azure Dev/Test pricing. Deploy B-series burstable VMs for dev. Use spot instances for non-critical batch jobs."},
+      {q:"Cost allocation tags applied to all resources?", rec:"Enforce CostCenter, Environment, and Application tags via Policy. Use these for chargeback/showback reporting."},
+      {q:"Storage lifecycle policies configured to tier cold data?", rec:"Set lifecycle policies to move blobs to Cool after 30 days, Archive after 90 days. Delete after retention period."},
+      {q:"FinOps culture and cost awareness built into team?", rec:"Share cost dashboards with engineering teams. Include cost metrics in sprint reviews. Celebrate cost reductions."},
+      {q:"Azure Hybrid Benefit applied for Windows/SQL workloads?", rec:"Apply Azure Hybrid Benefit to eligible Windows Server and SQL Server VMs. Up to 49% savings."},
+      {q:"Networking costs reviewed (egress, VPN, ExpressRoute)?", rec:"Review egress costs in Cost Analysis. Consolidate data transfer paths. Use VNet peering instead of VPN where possible."},
+      {q:"Cloud cost optimisation reviewed at least monthly?", rec:"Establish monthly FinOps review cadence. Review top 10 cost drivers, anomalies, and recommendations."},
+    ]
+  },
+  {
+    id: "operational", name: "Operational Excellence", color: "#3fb950", icon: "🟢",
+    items: [
+      {q:"Infrastructure deployed as code (Terraform / Bicep / ARM)?", rec:"All infrastructure in version-controlled IaC. No manual portal changes in production. Enforce via Azure Policy deny if needed."},
+      {q:"CI/CD pipelines automated for all environments?", rec:"Deploy via Azure DevOps or GitHub Actions pipelines. Include staging slot deployment and smoke tests before production swap."},
+      {q:"Centralised logging and observability configured?", rec:"Send all diagnostic logs to Log Analytics Workspace. Set up Application Insights for application telemetry."},
+      {q:"Runbooks documented for common operational tasks?", rec:"Document runbooks for: deployment, patching, backup validation, scaling, and incident response. Store in wiki."},
+      {q:"Change management process with rollback plan?", rec:"Require change approval for production. Every change must have a documented rollback plan before approval."},
+      {q:"Tagging strategy enforced and cost allocation working?", rec:"Enforce tags via Azure Policy. Validate monthly that cost reports can be allocated by workload and environment."},
+      {q:"Patch management and OS updates automated?", rec:"Use Azure Update Manager or Azure Automation for automated patching. Target <14 days for critical patches."},
+      {q:"Monitoring dashboards shared with business stakeholders?", rec:"Create Azure Workbooks dashboards for SLA/SLO visibility. Share with business and IT leadership."},
+      {q:"Post-incident reviews (PIR) conducted for all P1/P2 incidents?", rec:"Conduct blameless PIR within 5 business days of P1/P2 incidents. Track action items to closure."},
+      {q:"Environment parity between dev, test, staging, and production?", rec:"Use IaC to ensure environment consistency. Run the same deployment pipeline for all environments."},
+      {q:"Resource quotas and limits monitored?", rec:"Monitor Azure subscription quotas via Azure Monitor. Alert before limits are reached to avoid deployment failures."},
+      {q:"Team on-call rota and escalation paths defined?", rec:"Define on-call rota, escalation paths, and SLA for incident response. Use PagerDuty or Azure DevOps for on-call management."},
+    ]
+  },
+  {
+    id: "performance", name: "Performance Efficiency", color: "#8957e5", icon: "🟣",
+    items: [
+      {q:"Performance baselines and SLOs defined?", rec:"Define P50/P95/P99 latency targets. Measure during load testing. Alert when thresholds are breached."},
+      {q:"Load testing performed before production launch?", rec:"Run load tests at 2x expected peak load. Use Azure Load Testing. Fix P2+ issues before go-live."},
+      {q:"Caching implemented at appropriate layers?", rec:"Implement Azure Cache for Redis for session data and frequent queries. Use CDN for static assets."},
+      {q:"Database queries optimised and indexes reviewed?", rec:"Review slow query logs monthly. Add indexes for slow queries. Use Azure SQL Query Performance Insight."},
+      {q:"Content Delivery Network (CDN) used for static assets?", rec:"Deploy Azure CDN or Azure Front Door for static content. Reduces latency for global users significantly."},
+      {q:"Connection pooling configured for database connections?", rec:"Implement connection pooling (PgBouncer for PostgreSQL, built-in for SQL). Prevents connection exhaustion under load."},
+      {q:"Auto-scaling tested under realistic load conditions?", rec:"Test auto-scale trigger thresholds under load. Ensure scale-out completes before requests start failing."},
+      {q:"Premium storage used for I/O intensive workloads?", rec:"Use Premium SSD v2 or Ultra Disk for databases and I/O-intensive workloads. Review disk performance metrics."},
+      {q:"API and service response times monitored end-to-end?", rec:"Use Application Insights distributed tracing. Monitor end-to-end transaction response times across service boundaries."},
+      {q:"Asynchronous processing used for long-running operations?", rec:"Move long-running operations to async queues (Service Bus, Azure Functions). Return 202 Accepted immediately."},
+      {q:"Network performance optimised (proximity placement groups, Accelerated Networking)?", rec:"Use Accelerated Networking for VMs supporting it. Use Proximity Placement Groups for latency-sensitive tiers."},
+      {q:"Performance regressions detected in CI/CD pipeline?", rec:"Add performance regression tests to CI/CD pipeline. Block deployment if P95 latency exceeds baseline by >20%."},
+    ]
+  },
+];
+
+const COST_RESOURCES = [
+  {cat:"Compute", type:"Virtual Machine",
+    skus:[
+      {name:"B2s (2vCPU, 4GB RAM)",price:34},
+      {name:"D2s v5 (2vCPU, 8GB RAM)",price:70},
+      {name:"D4s v5 (4vCPU, 16GB RAM)",price:140},
+      {name:"D8s v5 (8vCPU, 32GB RAM)",price:280},
+      {name:"E4s v5 (4vCPU, 32GB RAM)",price:192},
+      {name:"F8s v2 (8vCPU, 16GB RAM)",price:200},
+    ]},
+  {cat:"Compute", type:"AKS (node pool)",
+    skus:[
+      {name:"1x D2s v5 node",price:70},
+      {name:"3x D2s v5 nodes",price:210},
+      {name:"5x D4s v5 nodes",price:700},
+    ]},
+  {cat:"Compute", type:"App Service Plan",
+    skus:[
+      {name:"B1 (Basic, 1.75GB RAM)",price:13},
+      {name:"S1 (Standard, 1.75GB RAM)",price:73},
+      {name:"P1v3 (Premium, 8GB RAM)",price:138},
+      {name:"P2v3 (Premium, 16GB RAM)",price:276},
+    ]},
+  {cat:"Compute", type:"Azure Container Apps",
+    skus:[
+      {name:"Consumption (light usage ~10k req/day)",price:15},
+      {name:"Consumption (medium ~100k req/day)",price:45},
+      {name:"Dedicated D4 environment",price:200},
+    ]},
+  {cat:"Storage", type:"Storage Account (Blob)",
+    skus:[
+      {name:"LRS Hot 100GB",price:2},
+      {name:"LRS Hot 1TB",price:20},
+      {name:"GRS Hot 1TB",price:40},
+      {name:"LRS Cool 1TB",price:10},
+    ]},
+  {cat:"Database", type:"Azure SQL Database",
+    skus:[
+      {name:"Basic (5 DTUs, 2GB)",price:5},
+      {name:"Standard S2 (50 DTUs)",price:75},
+      {name:"Standard S4 (200 DTUs)",price:300},
+      {name:"GP Gen5 4vCore",price:370},
+      {name:"GP Gen5 8vCore",price:740},
+    ]},
+  {cat:"Database", type:"Cosmos DB",
+    skus:[
+      {name:"Serverless ~1M RU/mo",price:1},
+      {name:"Provisioned 400 RU/s",price:25},
+      {name:"Provisioned 1000 RU/s",price:60},
+      {name:"Autoscale up to 10k RU/s",price:600},
+    ]},
+  {cat:"Database", type:"Azure Cache for Redis",
+    skus:[
+      {name:"C0 Basic 250MB",price:17},
+      {name:"C1 Standard 1GB",price:88},
+      {name:"P1 Premium 6GB",price:280},
+    ]},
+  {cat:"Networking", type:"Azure Firewall",
+    skus:[
+      {name:"Standard (no data processing)",price:912},
+      {name:"Premium",price:1750},
+    ]},
+  {cat:"Networking", type:"VPN Gateway",
+    skus:[
+      {name:"Basic (up to 100Mbps)",price:27},
+      {name:"VpnGw1 (up to 650Mbps)",price:140},
+      {name:"VpnGw2 (up to 1Gbps)",price:340},
+    ]},
+  {cat:"Networking", type:"Application Gateway",
+    skus:[
+      {name:"WAF v2 (small)",price:170},
+      {name:"WAF v2 (medium)",price:340},
+    ]},
+  {cat:"Networking", type:"Azure Bastion",
+    skus:[
+      {name:"Basic",price:140},
+      {name:"Standard",price:280},
+    ]},
+  {cat:"Networking", type:"Public IP Address",
+    skus:[
+      {name:"Basic",price:3},
+      {name:"Standard",price:4},
+    ]},
+  {cat:"Networking", type:"ExpressRoute Circuit",
+    skus:[
+      {name:"50Mbps Local",price:55},
+      {name:"200Mbps Standard",price:350},
+      {name:"1Gbps Premium",price:1500},
+    ]},
+  {cat:"Security", type:"Key Vault",
+    skus:[
+      {name:"Standard (10k ops/mo)",price:5},
+      {name:"Premium (HSM, 10k ops/mo)",price:25},
+    ]},
+  {cat:"Security", type:"Defender for Cloud",
+    skus:[
+      {name:"Defender for Servers P1 (per node)",price:10},
+      {name:"Defender for Servers P2 (per node)",price:20},
+      {name:"Defender for Storage (per account)",price:10},
+      {name:"Defender for SQL (per DB)",price:15},
+    ]},
+  {cat:"Monitoring", type:"Log Analytics Workspace",
+    skus:[
+      {name:"Pay-per-GB 10GB/day",price:230},
+      {name:"Pay-per-GB 50GB/day",price:1150},
+      {name:"100GB/day Commitment Tier",price:1960},
+    ]},
+  {cat:"Monitoring", type:"Application Insights",
+    skus:[
+      {name:"5GB/mo data (free tier)",price:0},
+      {name:"10GB/mo",price:23},
+      {name:"50GB/mo",price:115},
+    ]},
+  {cat:"Integration", type:"Service Bus",
+    skus:[
+      {name:"Basic (1M ops/mo)",price:10},
+      {name:"Standard (12.5M ops/mo)",price:10},
+      {name:"Premium (1 MU)",price:670},
+    ]},
+  {cat:"AI", type:"Azure OpenAI (GPT-4o mini)",
+    skus:[
+      {name:"~1M tokens/month",price:1},
+      {name:"~10M tokens/month",price:10},
+      {name:"~100M tokens/month",price:100},
+    ]},
+];
+
+const POLICIES = [
+  // Tagging
+  {id:"p001",cat:"Tagging",name:"Require 'Environment' tag on all resources",desc:"Denies deployment of resources that do not have an 'Environment' tag.",effect:"Deny",
+   rule:`{\n  "if": {\n    "field": "tags['Environment']",\n    "exists": false\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p002",cat:"Tagging",name:"Require 'CostCenter' tag on resource groups",desc:"Denies creation of resource groups without a 'CostCenter' tag.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Resources/subscriptions/resourceGroups"},\n      {"field": "tags['CostCenter']","exists": false}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p003",cat:"Tagging",name:"Inherit 'Environment' tag from resource group",desc:"Automatically adds the Environment tag value from the parent resource group using Modify effect.",effect:"Modify",
+   rule:`{\n  "if": {\n    "field": "tags['Environment']",\n    "exists": false\n  },\n  "then": {\n    "effect": "modify",\n    "details": {\n      "operations": [{\n        "operation": "addOrReplace",\n        "field": "tags['Environment']",\n        "value": "[resourceGroup().tags['Environment']]"\n      }]\n    }\n  }\n}`},
+  {id:"p004",cat:"Tagging",name:"Require 'Owner' tag (email) on subscriptions",desc:"Audits subscriptions that are missing the Owner tag for accountability.",effect:"Audit",
+   rule:`{\n  "if": {\n    "field": "tags['Owner']",\n    "exists": false\n  },\n  "then": { "effect": "audit" }\n}`},
+  // Regions
+  {id:"p010",cat:"Region",name:"Allowed locations: UAE North and UAE Central only",desc:"Restricts resource deployment to UAE North and UAE Central regions only.",effect:"Deny",
+   rule:`{\n  "if": {\n    "not": {\n      "field": "location",\n      "in": ["uaenorth","uaecentral","global"]\n    }\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p011",cat:"Region",name:"Allowed locations: Western Europe + North Europe",desc:"Restricts deployments to West Europe and North Europe regions.",effect:"Deny",
+   rule:`{\n  "if": {\n    "not": {\n      "field": "location",\n      "in": ["westeurope","northeurope","global"]\n    }\n  },\n  "then": { "effect": "deny" }\n}`},
+  // Compute
+  {id:"p020",cat:"Compute",name:"Allowed VM SKUs whitelist",desc:"Restricts VM deployments to an approved list of SKUs, preventing use of expensive or oversized VMs.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Compute/virtualMachines"},\n      {"not": {"field": "Microsoft.Compute/virtualMachines/sku.name","in": ["Standard_B2s","Standard_D2s_v5","Standard_D4s_v5","Standard_D8s_v5"]}}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p021",cat:"Compute",name:"Require Azure Hybrid Benefit for Windows VMs",desc:"Audits Windows VMs that are not using Azure Hybrid Benefit licensing.",effect:"Audit",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Compute/virtualMachines"},\n      {"field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType","equals": "Windows"},\n      {"field": "Microsoft.Compute/virtualMachines/licenseType","notEquals": "Windows_Server"}\n    ]\n  },\n  "then": { "effect": "audit" }\n}`},
+  {id:"p022",cat:"Compute",name:"Require Managed Disks for VMs",desc:"Denies creation of VMs using unmanaged disks.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Compute/virtualMachines"},\n      {"not": {"field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.managedDisk","exists": true}}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  // Networking
+  {id:"p030",cat:"Networking",name:"Deny public IP addresses on NICs",desc:"Prevents direct assignment of public IP addresses to virtual machine NICs.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Network/networkInterfaces"},\n      {"count": {"field": "Microsoft.Network/networkInterfaces/ipConfigurations[*].publicIpAddress.id"},"greater": 0}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p031",cat:"Networking",name:"Require NSG on all subnets",desc:"Audits subnets that do not have a Network Security Group attached.",effect:"Audit",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Network/virtualNetworks/subnets"},\n      {"field": "name","notIn": ["GatewaySubnet","AzureFirewallSubnet","AzureBastionSubnet"]},\n      {"field": "Microsoft.Network/virtualNetworks/subnets/networkSecurityGroup.id","exists": false}\n    ]\n  },\n  "then": { "effect": "audit" }\n}`},
+  {id:"p032",cat:"Networking",name:"Deny RDP port (3389) open to internet in NSG",desc:"Denies NSG rules that allow inbound RDP traffic from the internet (0.0.0.0/0).",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Network/networkSecurityGroups/securityRules"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/access","equals": "Allow"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/direction","equals": "Inbound"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/destinationPortRange","equals": "3389"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/sourceAddressPrefix","in": ["*","Internet","0.0.0.0/0"]}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p033",cat:"Networking",name:"Deny SSH port (22) open to internet in NSG",desc:"Denies NSG rules that allow inbound SSH traffic from the internet.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Network/networkSecurityGroups/securityRules"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/access","equals": "Allow"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/direction","equals": "Inbound"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/destinationPortRange","equals": "22"},\n      {"field": "Microsoft.Network/networkSecurityGroups/securityRules/sourceAddressPrefix","in": ["*","Internet","0.0.0.0/0"]}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  // Storage
+  {id:"p040",cat:"Storage",name:"Deny public blob access on storage accounts",desc:"Prevents enabling public access on storage account blob containers.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Storage/storageAccounts"},\n      {"field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess","equals": true}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p041",cat:"Storage",name:"Require HTTPS-only on storage accounts",desc:"Denies storage accounts that do not enforce HTTPS-only traffic.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Storage/storageAccounts"},\n      {"field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly","equals": false}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p042",cat:"Storage",name:"Require minimum TLS 1.2 for storage",desc:"Denies storage accounts that allow TLS versions below 1.2.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Storage/storageAccounts"},\n      {"field": "Microsoft.Storage/storageAccounts/minimumTlsVersion","notEquals": "TLS1_2"}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  // Security
+  {id:"p050",cat:"Security",name:"Require soft delete on Key Vault",desc:"Denies Key Vault creation without soft delete enabled, protecting against accidental deletion.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.KeyVault/vaults"},\n      {"field": "Microsoft.KeyVault/vaults/enableSoftDelete","equals": false}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  {id:"p051",cat:"Security",name:"Audit SQL databases without Transparent Data Encryption",desc:"Audits Azure SQL Databases that do not have TDE enabled.",effect:"Audit",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Sql/servers/databases"},\n      {"field": "name","notEquals": "master"}\n    ]\n  },\n  "then": {\n    "effect": "AuditIfNotExists",\n    "details": {\n      "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",\n      "name": "current",\n      "existenceCondition": {"field": "Microsoft.Sql/transparentDataEncryption.status","equals": "Enabled"}\n    }\n  }\n}`},
+  {id:"p052",cat:"Security",name:"Deploy Log Analytics agent to Windows VMs",desc:"Automatically deploys Log Analytics agent to Windows VMs that don't have it.",effect:"DeployIfNotExists",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Compute/virtualMachines"},\n      {"field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType","equals": "Windows"}\n    ]\n  },\n  "then": {\n    "effect": "DeployIfNotExists",\n    "details": {\n      "type": "Microsoft.Compute/virtualMachines/extensions",\n      "name": "MicrosoftMonitoringAgent"\n    }\n  }\n}`},
+  // Cost
+  {id:"p060",cat:"Cost",name:"Deny Premium SSD in dev environments",desc:"Prevents use of Premium SSD disks in subscriptions tagged as dev or test environment.",effect:"Deny",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "Microsoft.Compute/disks"},\n      {"field": "Microsoft.Compute/disks/sku.name","equals": "Premium_LRS"},\n      {"field": "tags['Environment']","in": ["dev","test","sandbox"]}\n    ]\n  },\n  "then": { "effect": "deny" }\n}`},
+  // Monitoring
+  {id:"p070",cat:"Monitoring",name:"Require diagnostic settings on all resources",desc:"Audits resources that do not have diagnostic settings configured to send logs to Log Analytics.",effect:"Audit",
+   rule:`{\n  "if": {"field": "type","in": ["Microsoft.Network/networkSecurityGroups","Microsoft.KeyVault/vaults","Microsoft.Storage/storageAccounts"]},\n  "then": {\n    "effect": "AuditIfNotExists",\n    "details": {"type": "Microsoft.Insights/diagnosticSettings"}\n  }\n}`},
+  {id:"p071",cat:"Monitoring",name:"Require activity log retention of 365 days",desc:"Audits Log Analytics workspaces with retention below 365 days.",effect:"Audit",
+   rule:`{\n  "if": {\n    "allOf": [\n      {"field": "type","equals": "microsoft.operationalinsights/workspaces"},\n      {"field": "Microsoft.OperationalInsights/workspaces/retentionInDays","less": 365}\n    ]\n  },\n  "then": { "effect": "audit" }\n}`},
+];
+
+// ============================================================
+// APP STATE
+// ============================================================
+const STATE = {
+  naming: { saved: [] },
+  cidr: { vnets: [] },
+  tags: { items: [] },
+  lz: { mgs: [], subs: [] },
+  waf: { answers: {} },
+  cost: { items: [] },
+  policy: { selected: new Set() },
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('cloudAdoptionHelper');
+    if (s) {
+      const parsed = JSON.parse(s);
+      if (parsed.naming) STATE.naming = parsed.naming;
+      if (parsed.cidr) STATE.cidr = parsed.cidr;
+      if (parsed.tags) STATE.tags = parsed.tags;
+      if (parsed.lz) STATE.lz = parsed.lz;
+      if (parsed.waf) STATE.waf = parsed.waf;
+      if (parsed.cost) STATE.cost = parsed.cost;
+      if (parsed.policy) STATE.policy.selected = new Set(parsed.policy.selected || []);
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    const data = {
+      naming: STATE.naming,
+      cidr: STATE.cidr,
+      tags: STATE.tags,
+      lz: STATE.lz,
+      waf: STATE.waf,
+      cost: STATE.cost,
+      policy: { selected: [...STATE.policy.selected] }
+    };
+    localStorage.setItem('cloudAdoptionHelper', JSON.stringify(data));
+  } catch(e) {}
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function toast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = {info:'ℹ️', success:'✅', error:'❌'};
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard!', 'success'))
+    .catch(() => { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); toast('Copied!', 'success'); });
+}
+
+function downloadFile(content, filename, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type: mime}));
+  a.download = filename;
+  a.click();
+}
+
+function printPage() { window.print(); }
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('tab-btn-' + id).classList.add('active');
+}
+
+// ============================================================
+// IP / CIDR MATH
+// ============================================================
+function ipToInt(ip) {
+  return ip.split('.').reduce((acc, oct) => (acc << 8) + parseInt(oct, 10), 0) >>> 0;
+}
+function intToIp(n) {
+  return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+}
+function cidrInfo(cidr) {
+  const [ip, prefix] = cidr.trim().split('/');
+  const plen = parseInt(prefix, 10);
+  if (isNaN(plen) || plen < 0 || plen > 32) return null;
+  const mask = plen === 0 ? 0 : (0xFFFFFFFF << (32 - plen)) >>> 0;
+  const network = (ipToInt(ip) & mask) >>> 0;
+  const broadcast = (network | (~mask >>> 0)) >>> 0;
+  const total = Math.pow(2, 32 - plen);
+  const usable = Math.max(0, total - 5); // Azure reserves 5
+  return { network, broadcast, mask, prefix: plen, networkIp: intToIp(network),
+    broadcastIp: intToIp(broadcast), total, usable,
+    firstUsable: plen <= 30 ? intToIp(network + 4) : intToIp(network),
+    lastUsable: plen <= 30 ? intToIp(broadcast - 1) : intToIp(broadcast),
+    subnetMask: intToIp(mask) };
+}
+function cidrsOverlap(a, b) {
+  const ia = cidrInfo(a), ib = cidrInfo(b);
+  if (!ia || !ib) return false;
+  return ia.network <= ib.broadcast && ib.network <= ia.broadcast;
+}
+function validateCIDRInput(el) {
+  const v = el.value.trim();
+  if (!v) { el.className = ''; return; }
+  const ok = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(v) && cidrInfo(v) !== null;
+  el.className = ok ? 'valid' : 'invalid';
+  if (v === el.id.includes('snet') ? 'cidr-snet-cidr' : 'cidr-calc-input') calcCIDR();
+}
+
+function calcCIDR() {
+  const v = document.getElementById('cidr-calc-input').value.trim();
+  const el = document.getElementById('cidr-calc-result');
+  if (!v) { el.innerHTML = ''; return; }
+  const info = cidrInfo(v);
+  if (!info) { el.innerHTML = '<span class="text-red">Invalid CIDR notation</span>'; return; }
+  el.innerHTML = `
+    <div class="flex justify-between"><span class="text-muted">Network Address:</span><span class="text-mono">${info.networkIp}</span></div>
+    <div class="flex justify-between"><span class="text-muted">Subnet Mask:</span><span class="text-mono">${info.subnetMask}</span></div>
+    <div class="flex justify-between"><span class="text-muted">Broadcast:</span><span class="text-mono">${info.broadcastIp}</span></div>
+    <div class="flex justify-between"><span class="text-muted">First Usable IP:</span><span class="text-mono text-green">${info.firstUsable}</span></div>
+    <div class="flex justify-between"><span class="text-muted">Last Usable IP:</span><span class="text-mono text-green">${info.lastUsable}</span></div>
+    <div class="flex justify-between"><span class="text-muted">Total IPs:</span><span class="text-mono">${info.total.toLocaleString()}</span></div>
+    <div class="flex justify-between"><span class="text-muted">Usable IPs (Azure -5):</span><span class="text-mono text-azure">${info.usable.toLocaleString()}</span></div>
+    <div class="flex justify-between"><span class="text-muted">Prefix Length:</span><span class="text-mono">/${info.prefix}</span></div>
+  `;
+}
+
+// ============================================================
+// TAB 1: NAMING
+// ============================================================
+function initNaming() {
+  // Populate resource type dropdown
+  const opts = document.getElementById('n-restype-opts');
+  let lastCat = '';
+  RESOURCE_TYPES.forEach(r => {
+    if (r.cat !== lastCat) {
+      const og = document.createElement('optgroup');
+      og.label = r.cat;
+      opts.parentNode.appendChild(og);
+      lastCat = r.cat;
+    }
+    const o = document.createElement('option');
+    o.value = r.type;
+    o.textContent = `${r.type} (${r.abbr})`;
+    opts.parentNode.lastChild.appendChild(o);
+  });
+
+  // Populate bulk list
+  const bl = document.getElementById('n-bulk-list');
+  let lastBulkCat = '';
+  RESOURCE_TYPES.forEach(r => {
+    if (r.cat !== lastBulkCat) {
+      const label = document.createElement('div');
+      label.className = 'text-xs text-muted bold mt-8';
+      label.style.textTransform = 'uppercase';
+      label.style.letterSpacing = '.4px';
+      label.textContent = r.cat;
+      bl.appendChild(label);
+      lastBulkCat = r.cat;
+    }
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)';
+    row.innerHTML = `<input type="checkbox" class="bulk-check" data-type="${r.type}" style="width:14px;height:14px;accent-color:var(--azure)"> ${r.type} <span class="text-muted text-xs">${r.abbr}</span>`;
+    bl.appendChild(row);
+  });
+
+  // Populate ref table
+  const tbody = document.getElementById('ref-tbody');
+  RESOURCE_TYPES.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.type}</td><td class="text-mono text-azure">${r.abbr}</td><td>${r.max}</td><td class="text-muted text-xs">${r.scope}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  renderSavedNames();
+  generateName();
+}
+
+function cleanNamePart(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 15);
+}
+function cleanNamePartHyphen(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 20);
+}
+
+function generateName() {
+  const prefix = cleanNamePart(document.getElementById('n-prefix').value);
+  const workload = cleanNamePartHyphen(document.getElementById('n-workload').value);
+  const env = document.getElementById('n-env').value;
+  const region = document.getElementById('n-region').value;
+  const instance = (document.getElementById('n-instance').value || '001').replace(/[^a-z0-9]/gi, '');
+  const resType = document.getElementById('n-restype').value;
+  const res = RESOURCE_TYPES.find(r => r.type === resType);
+
+  if (!res) return;
+
+  let name;
+  if (res.noHyphen) {
+    // No hyphens allowed (e.g. Storage Account, Container Registry)
+    name = `${res.abbr}${prefix}${cleanNamePart(workload)}${cleanNamePart(env)}${cleanNamePart(region)}${cleanNamePart(instance)}`;
+  } else {
+    name = `${res.abbr}-${prefix ? prefix + '-' : ''}${workload || 'workload'}-${env}-${region}-${instance}`;
+  }
+
+  if (res.lcase) name = name.toLowerCase();
+
+  const el = document.getElementById('n-output');
+  el.textContent = name;
+
+  // Validation
+  const issues = [];
+  if (name.length > res.max) issues.push(`Too long: ${name.length}/${res.max} chars`);
+  if ((res.min || 0) > 0 && name.length < res.min) issues.push(`Too short: min ${res.min} chars`);
+  if (res.noHyphen && name.includes('-')) issues.push('Hyphens not allowed for this resource type');
+  if (res.lcase && name !== name.toLowerCase()) issues.push('Must be lowercase');
+
+  const valEl = document.getElementById('n-validation');
+  const infoEl = document.getElementById('n-info');
+
+  if (issues.length === 0) {
+    el.className = 'name-display valid-name';
+    valEl.innerHTML = `<span class="val-badge val-ok">✓ Valid (${name.length}/${res.max} chars)</span>`;
+  } else {
+    el.className = 'name-display invalid-name';
+    valEl.innerHTML = `<span class="val-badge val-err">✗ ${issues[0]}</span>`;
+  }
+
+  // Show resource rules
+  const rulesEl = document.getElementById('n-rules');
+  rulesEl.innerHTML = `
+    <div class="flex-col gap-4">
+      <div class="flex justify-between"><span class="text-muted">Abbreviation:</span><span class="text-mono text-azure">${res.abbr}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Max Length:</span><span>${res.max} chars</span></div>
+      ${res.min ? `<div class="flex justify-between"><span class="text-muted">Min Length:</span><span>${res.min} chars</span></div>` : ''}
+      <div class="flex justify-between"><span class="text-muted">Scope:</span><span>${res.scope}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Allowed Chars:</span><span class="text-sm">${res.chars}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Case:</span><span>${res.lcase ? 'Lowercase only' : 'Case insensitive'}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Hyphens:</span><span>${res.noHyphen ? '❌ Not allowed' : '✅ Allowed'}</span></div>
+    </div>`;
+
+  infoEl.textContent = `Pattern: ${res.noHyphen ? '{abbr}{prefix}{workload}{env}{region}{instance}' : '{abbr}-{prefix}-{workload}-{env}-{region}-{instance}'}`;
+}
+
+function copyName() {
+  const name = document.getElementById('n-output').textContent;
+  if (name && name !== '—') copyText(name);
+}
+
+function saveCurrentName() {
+  const name = document.getElementById('n-output').textContent;
+  const resType = document.getElementById('n-restype').value;
+  if (!name || name === '—') return;
+  if (!STATE.naming.saved) STATE.naming.saved = [];
+  STATE.naming.saved.push({ name, type: resType, ts: new Date().toISOString() });
+  saveState();
+  renderSavedNames();
+  toast('Name saved!', 'success');
+}
+
+function clearSavedNames() {
+  STATE.naming.saved = [];
+  saveState();
+  renderSavedNames();
+}
+
+function renderSavedNames() {
+  const el = document.getElementById('saved-names-list');
+  const cnt = document.getElementById('saved-count');
+  const saved = STATE.naming.saved || [];
+  cnt.textContent = `(${saved.length})`;
+  if (saved.length === 0) {
+    el.innerHTML = '<div class="text-sm text-muted">No saved names yet.</div>';
+    return;
+  }
+  el.innerHTML = saved.map((s, i) => `
+    <div class="flex items-center justify-between" style="padding:4px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div class="text-mono text-azure text-sm">${s.name}</div>
+        <div class="text-xs text-muted">${s.type}</div>
+      </div>
+      <div class="flex gap-4">
+        <button class="btn-ghost btn-xs" onclick="copyText('${s.name}')">📋</button>
+        <button class="btn-ghost btn-xs" onclick="removeSavedName(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function removeSavedName(i) {
+  STATE.naming.saved.splice(i, 1);
+  saveState();
+  renderSavedNames();
+}
+
+function generateBulk() {
+  const checks = document.querySelectorAll('.bulk-check:checked');
+  if (checks.length === 0) { toast('Select at least one resource type', 'error'); return; }
+  const prefix = cleanNamePart(document.getElementById('n-prefix').value);
+  const workload = cleanNamePartHyphen(document.getElementById('n-workload').value) || 'workload';
+  const env = document.getElementById('n-env').value;
+  const region = document.getElementById('n-region').value;
+  const instance = (document.getElementById('n-instance').value || '001').replace(/[^a-z0-9]/gi, '');
+  const newSaved = STATE.naming.saved ? [...STATE.naming.saved] : [];
+  checks.forEach(c => {
+    const res = RESOURCE_TYPES.find(r => r.type === c.dataset.type);
+    if (!res) return;
+    let name = res.noHyphen
+      ? `${res.abbr}${prefix}${cleanNamePart(workload)}${cleanNamePart(env)}${cleanNamePart(region)}${cleanNamePart(instance)}`
+      : `${res.abbr}-${prefix ? prefix + '-' : ''}${workload}-${env}-${region}-${instance}`;
+    if (res.lcase) name = name.toLowerCase();
+    if (name.length > res.max) name = name.substring(0, res.max);
+    newSaved.push({ name, type: res.type, ts: new Date().toISOString() });
+  });
+  STATE.naming.saved = newSaved;
+  saveState();
+  renderSavedNames();
+  toast(`Generated ${checks.length} names!`, 'success');
+}
+
+function selectAllBulk() { document.querySelectorAll('.bulk-check').forEach(c => c.checked = true); }
+function deselectAllBulk() { document.querySelectorAll('.bulk-check').forEach(c => c.checked = false); }
+function clearNaming() { STATE.naming.saved = []; saveState(); renderSavedNames(); }
+
+function filterRefTable(q) {
+  const rows = document.querySelectorAll('#ref-tbody tr');
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function exportNaming(fmt) {
+  const data = STATE.naming.saved || [];
+  if (data.length === 0) { toast('No saved names to export', 'error'); return; }
+  if (fmt === 'csv') {
+    const csv = 'Name,ResourceType,Timestamp\n' + data.map(d => `"${d.name}","${d.type}","${d.ts}"`).join('\n');
+    downloadFile(csv, 'azure-naming-convention.csv', 'text/csv');
+  } else {
+    downloadFile(JSON.stringify(data, null, 2), 'azure-naming-convention.json', 'application/json');
+  }
+  toast('Exported!', 'success');
+}
+
+// ============================================================
+// TAB 2: CIDR PLANNER
+// ============================================================
+let activeVNetId = null;
+
+function addVNet() {
+  const name = document.getElementById('cidr-vnet-name').value.trim();
+  const cidr = document.getElementById('cidr-vnet-cidr').value.trim();
+  const role = document.getElementById('cidr-vnet-role').value;
+  const region = document.getElementById('cidr-vnet-region').value;
+  if (!name || !cidr) { toast('Name and CIDR are required', 'error'); return; }
+  if (!cidrInfo(cidr)) { toast('Invalid CIDR notation', 'error'); return; }
+  const id = 'vnet_' + Date.now();
+  STATE.cidr.vnets.push({ id, name, cidr, role, region, subnets: [] });
+  document.getElementById('cidr-vnet-name').value = '';
+  document.getElementById('cidr-vnet-cidr').value = '';
+  saveState();
+  renderCIDR();
+  toast('VNet added!', 'success');
+}
+
+function addSubnet() {
+  if (!activeVNetId) { toast('Select a VNet first', 'error'); return; }
+  const name = document.getElementById('cidr-snet-name').value.trim();
+  const cidr = document.getElementById('cidr-snet-cidr').value.trim();
+  const purpose = document.getElementById('cidr-snet-purpose').value;
+  const nsg = document.getElementById('cidr-snet-nsg').checked;
+  const rt = document.getElementById('cidr-snet-rt').checked;
+  if (!name || !cidr) { toast('Subnet name and CIDR required', 'error'); return; }
+  if (!cidrInfo(cidr)) { toast('Invalid CIDR notation', 'error'); return; }
+  const vnet = STATE.cidr.vnets.find(v => v.id === activeVNetId);
+  if (!vnet) return;
+  // Check subnet is within VNet
+  const vi = cidrInfo(vnet.cidr), si = cidrInfo(cidr);
+  if (si.network < vi.network || si.broadcast > vi.broadcast) {
+    toast('Subnet CIDR must be within the VNet address space', 'error'); return;
+  }
+  vnet.subnets.push({ id: 'snet_' + Date.now(), name, cidr, purpose, nsg, rt });
+  document.getElementById('cidr-snet-name').value = '';
+  document.getElementById('cidr-snet-cidr').value = '';
+  saveState();
+  renderCIDR();
+  toast('Subnet added!', 'success');
+}
+
+function removeVNet(id) {
+  STATE.cidr.vnets = STATE.cidr.vnets.filter(v => v.id !== id);
+  if (activeVNetId === id) { activeVNetId = null; document.getElementById('cidr-subnet-form-card').style.display = 'none'; }
+  saveState();
+  renderCIDR();
+}
+function removeSubnet(vnetId, subnetId) {
+  const vnet = STATE.cidr.vnets.find(v => v.id === vnetId);
+  if (vnet) vnet.subnets = vnet.subnets.filter(s => s.id !== subnetId);
+  saveState();
+  renderCIDR();
+}
+
+function selectVNet(id) {
+  activeVNetId = id;
+  const vnet = STATE.cidr.vnets.find(v => v.id === id);
+  document.getElementById('cidr-active-vnet-label').textContent = vnet ? vnet.name : '';
+  document.getElementById('cidr-subnet-form-card').style.display = '';
+}
+
+function renderCIDR() {
+  renderVNetList();
+  renderCIDRSummary();
+  renderSubnetTable();
+  checkOverlap();
+}
+
+const roleColors = { hub:'#0078d4', spoke:'#50e6ff', standalone:'#3fb950', onprem:'#d29922' };
+const roleIcons = { hub:'🌐', spoke:'🔗', standalone:'🔵', onprem:'🏢' };
+
+function renderVNetList() {
+  const el = document.getElementById('cidr-vnet-list');
+  if (STATE.cidr.vnets.length === 0) {
+    el.innerHTML = '<div class="text-sm text-muted text-center" style="padding:24px">No VNets added yet.</div>';
+    return;
+  }
+  el.innerHTML = STATE.cidr.vnets.map(v => {
+    const info = cidrInfo(v.cidr);
+    const usedIPs = v.subnets.reduce((a, s) => { const si = cidrInfo(s.cidr); return a + (si ? si.usable : 0); }, 0);
+    const pct = info ? Math.min(100, Math.round(usedIPs / info.usable * 100)) : 0;
+    return `
+    <div class="card" style="border-color:${roleColors[v.role]||'var(--border)'}20;padding:12px">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-8">
+          <span>${roleIcons[v.role]||'🔵'}</span>
+          <div>
+            <div class="bold text-sm">${v.name}</div>
+            <div class="text-xs text-muted">${v.role.toUpperCase()} · ${v.region}</div>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <button class="btn-secondary btn-xs" onclick="selectVNet('${v.id}')">+ Subnet</button>
+          <button class="btn-danger btn-xs" onclick="removeVNet('${v.id}')">✕</button>
+        </div>
+      </div>
+      <div class="flex justify-between text-sm mb-4">
+        <span class="text-mono text-azure">${v.cidr}</span>
+        <span class="text-muted">${info ? info.usable.toLocaleString() : '?'} usable IPs · ${v.subnets.length} subnets · ${pct}% used</span>
+      </div>
+      <div class="cidr-bar-wrap"><div class="cidr-bar" style="width:${pct}%"></div></div>
+      ${v.subnets.length > 0 ? `<div class="mt-8 flex-col gap-4">` +
+        v.subnets.map(s => {
+          const si = cidrInfo(s.cidr);
+          return `<div class="flex items-center justify-between" style="padding:3px 0;font-size:12px">
+            <span class="text-muted">${s.purpose === 'GatewaySubnet'||s.purpose==='AzureFirewallSubnet'||s.purpose==='AzureBastionSubnet' ? '🔒' : '📦'} ${s.name}</span>
+            <span class="text-mono">${s.cidr}</span>
+            <span class="text-muted">${si ? si.usable.toLocaleString() : '?'} IPs</span>
+            <button class="btn-ghost btn-xs" onclick="removeSubnet('${v.id}','${s.id}')">✕</button>
+          </div>`;
+        }).join('') + `</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderCIDRSummary() {
+  const tbody = document.getElementById('cidr-summary-tbody');
+  if (STATE.cidr.vnets.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No data</td></tr>'; return; }
+  tbody.innerHTML = STATE.cidr.vnets.map(v => {
+    const info = cidrInfo(v.cidr);
+    const usedIPs = v.subnets.reduce((a, s) => { const si = cidrInfo(s.cidr); return a + (si ? si.usable : 0); }, 0);
+    const freeIPs = info ? info.usable - usedIPs : 0;
+    return `<tr>
+      <td class="bold">${v.name}</td>
+      <td class="text-mono text-azure">${v.cidr}</td>
+      <td><span class="badge badge-blue">${v.role}</span></td>
+      <td>${info ? info.total.toLocaleString() : '?'}</td>
+      <td>${v.subnets.length}</td>
+      <td>${usedIPs.toLocaleString()}</td>
+      <td class="${freeIPs > 0 ? 'text-green' : 'text-red'}">${freeIPs.toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderSubnetTable() {
+  const tbody = document.getElementById('cidr-subnet-tbody');
+  const allSubnets = [];
+  STATE.cidr.vnets.forEach(v => v.subnets.forEach(s => allSubnets.push({ ...s, vnetName: v.name })));
+  if (allSubnets.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="text-muted text-center">No subnets</td></tr>'; return; }
+  tbody.innerHTML = allSubnets.map(s => {
+    const info = cidrInfo(s.cidr);
+    return `<tr>
+      <td class="text-muted text-sm">${s.vnetName}</td>
+      <td class="bold">${s.name}</td>
+      <td class="text-mono text-azure">${s.cidr}</td>
+      <td class="text-muted text-sm">${s.purpose}</td>
+      <td>${info ? info.usable.toLocaleString() : '?'}</td>
+      <td class="text-mono text-sm">${info ? info.firstUsable : '?'}</td>
+      <td class="text-mono text-sm">${info ? info.lastUsable : '?'}</td>
+      <td>${s.nsg ? '✅' : '—'}</td>
+      <td>${s.rt ? '✅' : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function checkOverlap() {
+  const el = document.getElementById('cidr-overlap-result');
+  const allCidrs = [];
+  STATE.cidr.vnets.forEach(v => {
+    allCidrs.push({ name: v.name, cidr: v.cidr, type: 'VNet' });
+    v.subnets.forEach(s => allCidrs.push({ name: `${v.name}/${s.name}`, cidr: s.cidr, type: 'Subnet' }));
+  });
+  const conflicts = [];
+  for (let i = 0; i < allCidrs.length; i++) {
+    for (let j = i + 1; j < allCidrs.length; j++) {
+      if (cidrsOverlap(allCidrs[i].cidr, allCidrs[j].cidr)) {
+        if (!(allCidrs[i].type === 'VNet' && allCidrs[j].name.startsWith(allCidrs[i].name + '/'))) {
+          conflicts.push(`⚠️ <strong>${allCidrs[i].name}</strong> (${allCidrs[i].cidr}) overlaps with <strong>${allCidrs[j].name}</strong> (${allCidrs[j].cidr})`);
+        }
+      }
+    }
+  }
+  if (conflicts.length === 0) {
+    el.innerHTML = allCidrs.length > 1 ? '<span class="text-green">✅ No overlapping address spaces detected.</span>' : '<span class="text-muted">Add more VNets to check for overlaps.</span>';
+  } else {
+    el.innerHTML = conflicts.map(c => `<div class="text-sm mb-4">${c}</div>`).join('');
+  }
+}
+
+function loadPreset(name) {
+  const presets = {
+    small: {
+      vnets: [
+        { id:'p_hub', name:'vnet-hub-prod-uan-001', cidr:'10.0.0.0/16', role:'hub', region:'UAE North',
+          subnets: [
+            { id:'ps1', name:'GatewaySubnet', cidr:'10.0.0.0/27', purpose:'GatewaySubnet', nsg:false, rt:false },
+            { id:'ps2', name:'AzureFirewallSubnet', cidr:'10.0.1.0/26', purpose:'AzureFirewallSubnet', nsg:false, rt:false },
+            { id:'ps3', name:'AzureBastionSubnet', cidr:'10.0.2.0/26', purpose:'AzureBastionSubnet', nsg:false, rt:false },
+            { id:'ps4', name:'snet-mgmt-001', cidr:'10.0.3.0/24', purpose:'Management', nsg:true, rt:true },
+          ]},
+        { id:'p_sp1', name:'vnet-spoke-workload-prod-001', cidr:'10.1.0.0/20', role:'spoke', region:'UAE North',
+          subnets: [
+            { id:'ps5', name:'snet-web-001', cidr:'10.1.0.0/24', purpose:'Web', nsg:true, rt:true },
+            { id:'ps6', name:'snet-app-001', cidr:'10.1.1.0/24', purpose:'App', nsg:true, rt:true },
+            { id:'ps7', name:'snet-db-001', cidr:'10.1.2.0/24', purpose:'Database', nsg:true, rt:true },
+          ]},
+        { id:'p_sp2', name:'vnet-spoke-shared-prod-001', cidr:'10.2.0.0/20', role:'spoke', region:'UAE North',
+          subnets: [
+            { id:'ps8', name:'snet-shared-001', cidr:'10.2.0.0/24', purpose:'SharedServices', nsg:true, rt:true },
+            { id:'ps9', name:'snet-pep-001', cidr:'10.2.1.0/24', purpose:'PrivateEndpoints', nsg:false, rt:false },
+          ]},
+      ]},
+    medium: {
+      vnets: [
+        { id:'m_hub', name:'vnet-hub-prod-uan-001', cidr:'10.0.0.0/16', role:'hub', region:'UAE North',
+          subnets: [
+            { id:'ms1', name:'GatewaySubnet', cidr:'10.0.0.0/27', purpose:'GatewaySubnet', nsg:false, rt:false },
+            { id:'ms2', name:'AzureFirewallSubnet', cidr:'10.0.1.0/26', purpose:'AzureFirewallSubnet', nsg:false, rt:false },
+            { id:'ms3', name:'AzureBastionSubnet', cidr:'10.0.2.0/26', purpose:'AzureBastionSubnet', nsg:false, rt:false },
+            { id:'ms4', name:'snet-mgmt-001', cidr:'10.0.3.0/24', purpose:'Management', nsg:true, rt:true },
+            { id:'ms5', name:'snet-shared-001', cidr:'10.0.4.0/24', purpose:'SharedServices', nsg:true, rt:true },
+          ]},
+        { id:'m_sp1', name:'vnet-spoke-prod-001', cidr:'10.1.0.0/18', role:'spoke', region:'UAE North',
+          subnets: [
+            { id:'ms6', name:'snet-web-001', cidr:'10.1.0.0/24', purpose:'Web', nsg:true, rt:true },
+            { id:'ms7', name:'snet-app-001', cidr:'10.1.1.0/24', purpose:'App', nsg:true, rt:true },
+            { id:'ms8', name:'snet-db-001', cidr:'10.1.2.0/24', purpose:'Database', nsg:true, rt:true },
+          ]},
+        { id:'m_sp2', name:'vnet-spoke-dev-001', cidr:'10.2.0.0/18', role:'spoke', region:'UAE North',
+          subnets: [
+            { id:'ms9', name:'snet-dev-001', cidr:'10.2.0.0/24', purpose:'Workload', nsg:true, rt:false },
+          ]},
+        { id:'m_sp3', name:'vnet-spoke-dmz-001', cidr:'10.3.0.0/18', role:'spoke', region:'UAE North',
+          subnets: [
+            { id:'ms10', name:'snet-dmz-001', cidr:'10.3.0.0/24', purpose:'Web', nsg:true, rt:true },
+          ]},
+      ]},
+    large: {
+      vnets: [
+        { id:'l_hub', name:'vnet-hub-prod-uan-001', cidr:'10.0.0.0/14', role:'hub', region:'UAE North',
+          subnets: [
+            { id:'ls1', name:'GatewaySubnet', cidr:'10.0.0.0/27', purpose:'GatewaySubnet', nsg:false, rt:false },
+            { id:'ls2', name:'AzureFirewallSubnet', cidr:'10.0.1.0/26', purpose:'AzureFirewallSubnet', nsg:false, rt:false },
+            { id:'ls3', name:'AzureBastionSubnet', cidr:'10.0.2.0/26', purpose:'AzureBastionSubnet', nsg:false, rt:false },
+          ]},
+        { id:'l_sp1', name:'vnet-spoke-prod-01', cidr:'10.1.0.0/16', role:'spoke', region:'UAE North', subnets: [] },
+        { id:'l_sp2', name:'vnet-spoke-prod-02', cidr:'10.2.0.0/16', role:'spoke', region:'UAE Central', subnets: [] },
+        { id:'l_sp3', name:'vnet-spoke-dev-01', cidr:'10.3.0.0/16', role:'spoke', region:'UAE North', subnets: [] },
+        { id:'l_onp', name:'onprem-network', cidr:'192.168.0.0/16', role:'onprem', region:'On-Premises', subnets: [] },
+      ]},
+    sandbox: {
+      vnets: [
+        { id:'s_vnet', name:'vnet-sandbox-dev-uan-001', cidr:'172.20.0.0/16', role:'standalone', region:'UAE North',
+          subnets: [
+            { id:'ss1', name:'snet-default-001', cidr:'172.20.0.0/24', purpose:'Workload', nsg:true, rt:false },
+            { id:'ss2', name:'AzureBastionSubnet', cidr:'172.20.1.0/26', purpose:'AzureBastionSubnet', nsg:false, rt:false },
+          ]},
+      ]},
+  };
+  const preset = presets[name];
+  if (!preset) return;
+  STATE.cidr.vnets = preset.vnets;
+  activeVNetId = null;
+  document.getElementById('cidr-subnet-form-card').style.display = 'none';
+  saveState();
+  renderCIDR();
+  toast(`${name.charAt(0).toUpperCase() + name.slice(1)} preset loaded!`, 'success');
+}
+
+function clearCIDR() { STATE.cidr.vnets = []; activeVNetId = null; document.getElementById('cidr-subnet-form-card').style.display = 'none'; saveState(); renderCIDR(); }
+
+function exportCIDR(fmt) {
+  if (STATE.cidr.vnets.length === 0) { toast('No data to export', 'error'); return; }
+  if (fmt === 'json') {
+    downloadFile(JSON.stringify(STATE.cidr.vnets, null, 2), 'azure-network-plan.json', 'application/json');
+  } else {
+    const rows = ['VNet Name,VNet CIDR,Role,Subnet Name,Subnet CIDR,Purpose,Usable IPs,NSG,Route Table'];
+    STATE.cidr.vnets.forEach(v => {
+      if (v.subnets.length === 0) { rows.push(`"${v.name}","${v.cidr}","${v.role}","","","","","",""`); }
+      v.subnets.forEach(s => {
+        const info = cidrInfo(s.cidr);
+        rows.push(`"${v.name}","${v.cidr}","${v.role}","${s.name}","${s.cidr}","${s.purpose}","${info?info.usable:''}","${s.nsg}","${s.rt}"`);
+      });
+    });
+    downloadFile(rows.join('\n'), 'azure-network-plan.csv', 'text/csv');
+  }
+  toast('Exported!', 'success');
+}
+
+// ============================================================
+// TAB 3: TAGGING
+// ============================================================
+const TAG_TEMPLATES = {
+  caf: [
+    {key:'Environment',cat:'Governance',desc:'Deployment environment lifecycle stage',values:'dev,test,stg,prod',def:'prod',scope:'All',effect:'Deny',required:true},
+    {key:'Owner',cat:'Governance',desc:'Email address of the resource or workload owner',values:'',def:'',scope:'Resource',effect:'Audit',required:true},
+    {key:'CostCenter',cat:'Cost',desc:'Business cost center code for financial allocation',values:'',def:'',scope:'All',effect:'Deny',required:true},
+    {key:'Application',cat:'Governance',desc:'Name of the application or workload using this resource',values:'',def:'',scope:'Resource',effect:'Audit',required:true},
+    {key:'BusinessUnit',cat:'Governance',desc:'Business unit or department responsible for the resource',values:'',def:'',scope:'ResourceGroup',effect:'Audit',required:false},
+    {key:'DataClassification',cat:'Security',desc:'Sensitivity level of data processed by this resource',values:'Public,Internal,Confidential,Restricted',def:'Internal',scope:'Resource',effect:'Audit',required:false},
+  ],
+  extended: [
+    {key:'Environment',cat:'Governance',desc:'Deployment environment',values:'dev,test,stg,prod,sbx',def:'prod',scope:'All',effect:'Deny',required:true},
+    {key:'Owner',cat:'Governance',desc:'Owner email address',values:'',def:'',scope:'Resource',effect:'Audit',required:true},
+    {key:'CostCenter',cat:'Cost',desc:'Financial cost center code',values:'',def:'',scope:'All',effect:'Deny',required:true},
+    {key:'Application',cat:'Governance',desc:'Application or workload name',values:'',def:'',scope:'Resource',effect:'Audit',required:true},
+    {key:'BusinessUnit',cat:'Governance',desc:'Business unit name',values:'',def:'',scope:'ResourceGroup',effect:'Audit',required:true},
+    {key:'DataClassification',cat:'Security',desc:'Data sensitivity classification',values:'Public,Internal,Confidential,Restricted',def:'Internal',scope:'Resource',effect:'Deny',required:true},
+    {key:'Criticality',cat:'Operations',desc:'Business criticality of the workload',values:'Low,Medium,High,Mission-Critical',def:'Medium',scope:'Resource',effect:'Audit',required:false},
+    {key:'DR',cat:'Operations',desc:'Disaster recovery tier',values:'DR-None,DR-Cold,DR-Warm,DR-Hot',def:'DR-None',scope:'Resource',effect:'Audit',required:false},
+    {key:'SLA',cat:'Operations',desc:'Required service level agreement',values:'99.9,99.95,99.99',def:'99.9',scope:'Resource',effect:'Audit',required:false},
+    {key:'Project',cat:'Governance',desc:'Project or initiative name',values:'',def:'',scope:'ResourceGroup',effect:'Audit',required:false},
+    {key:'ManagedBy',cat:'Operations',desc:'Team responsible for managing this resource',values:'Platform,AppTeam,Security,FinOps',def:'Platform',scope:'Resource',effect:'Audit',required:false},
+  ],
+  finops: [
+    {key:'CostCenter',cat:'Cost',desc:'Financial cost center for chargeback',values:'',def:'',scope:'All',effect:'Deny',required:true},
+    {key:'BudgetOwner',cat:'Cost',desc:'Email of person responsible for the budget',values:'',def:'',scope:'ResourceGroup',effect:'Audit',required:true},
+    {key:'Environment',cat:'Cost',desc:'Environment for dev/test pricing',values:'dev,test,stg,prod',def:'prod',scope:'All',effect:'Deny',required:true},
+    {key:'CostModel',cat:'Cost',desc:'Cost allocation model',values:'Shared,Dedicated,Allocated',def:'Dedicated',scope:'ResourceGroup',effect:'Audit',required:false},
+    {key:'RI-Eligible',cat:'Cost',desc:'Whether this resource is eligible for Reserved Instance',values:'yes,no',def:'no',scope:'Resource',effect:'Audit',required:false},
+    {key:'AutoShutdown',cat:'Cost',desc:'Enable auto-shutdown for cost savings in non-prod',values:'enabled,disabled',def:'disabled',scope:'Resource',effect:'Audit',required:false},
+  ],
+  security: [
+    {key:'DataClassification',cat:'Security',desc:'Sensitivity of data processed',values:'Public,Internal,Confidential,Restricted',def:'Internal',scope:'Resource',effect:'Deny',required:true},
+    {key:'ComplianceScope',cat:'Security',desc:'Compliance frameworks applicable',values:'ISO27001,SOC2,GDPR,PCI-DSS,HIPAA,None',def:'None',scope:'Resource',effect:'Audit',required:false},
+    {key:'SecurityContact',cat:'Security',desc:'Security team contact email',values:'',def:'',scope:'ResourceGroup',effect:'Audit',required:true},
+    {key:'PatchGroup',cat:'Security',desc:'Patch maintenance window group',values:'PG1-Monday,PG2-Tuesday,PG3-Wednesday,PG4-Thursday',def:'PG1-Monday',scope:'Resource',effect:'Audit',required:false},
+    {key:'Backup',cat:'Security',desc:'Whether backup is required',values:'required,not-required',def:'required',scope:'Resource',effect:'Audit',required:false},
+  ],
+};
+
+function addTag() {
+  const key = document.getElementById('tag-key').value.trim();
+  if (!key) { toast('Tag key is required', 'error'); return; }
+  if (STATE.tags.items.find(t => t.key === key)) { toast('Tag already exists', 'error'); return; }
+  STATE.tags.items.push({
+    key,
+    cat: document.getElementById('tag-category').value,
+    desc: document.getElementById('tag-desc').value,
+    values: document.getElementById('tag-values').value.split(',').map(v => v.trim()).filter(Boolean),
+    def: document.getElementById('tag-default').value,
+    scope: document.getElementById('tag-scope').value,
+    effect: document.getElementById('tag-effect').value,
+    required: document.getElementById('tag-required').checked,
+  });
+  ['tag-key','tag-desc','tag-values','tag-default'].forEach(id => document.getElementById(id).value = '');
+  saveState();
+  renderTagTable();
+  toast('Tag added!', 'success');
+}
+
+function removeTag(key) {
+  STATE.tags.items = STATE.tags.items.filter(t => t.key !== key);
+  saveState();
+  renderTagTable();
+}
+
+function renderTagTable() {
+  const tbody = document.getElementById('tag-tbody');
+  const cnt = document.getElementById('tag-count');
+  cnt.textContent = STATE.tags.items.length;
+  if (STATE.tags.items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No tags. Load a template or add tags.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = STATE.tags.items.map(t => `
+    <tr onclick="previewTagPolicy('${t.key}')" style="cursor:pointer">
+      <td class="bold text-azure">${t.key}</td>
+      <td class="text-muted text-sm">${t.cat}</td>
+      <td>${t.required ? '<span class="val-badge val-ok">Required</span>' : '<span class="val-badge">Optional</span>'}</td>
+      <td class="text-xs">${t.values.length ? t.values.join(', ') : '<em class="text-muted">free-text</em>'}</td>
+      <td class="text-muted text-sm">${t.scope}</td>
+      <td><span class="policy-effect effect-${t.effect.toLowerCase().replace('deployifnotexists','dine')}">${t.effect}</span></td>
+      <td><button class="btn-ghost btn-xs" onclick="event.stopPropagation();removeTag('${t.key}')">✕</button></td>
+    </tr>`).join('');
+  renderTagMatrix();
+}
+
+function previewTagPolicy(key) {
+  const tag = STATE.tags.items.find(t => t.key === key);
+  if (!tag) return;
+  const allowed = tag.values.length ? `\n      "in": [${tag.values.map(v => `"${v}"`).join(', ')}]` : `\n      "exists": true`;
+  const policy = {
+    name: `require-tag-${tag.key.toLowerCase()}`,
+    displayName: `Require '${tag.key}' tag`,
+    description: tag.desc || `Requires the '${tag.key}' tag on all resources`,
+    policyRule: {
+      if: { field: `tags['${tag.key}']`, exists: tag.effect !== 'Modify' ? false : undefined },
+      then: { effect: tag.effect }
+    }
+  };
+  document.getElementById('tag-policy-preview').textContent = JSON.stringify(policy, null, 2);
+}
+
+function renderTagMatrix() {
+  const el = document.getElementById('tag-matrix');
+  if (STATE.tags.items.length === 0) { el.innerHTML = '<div class="text-muted">Add tags to see the coverage matrix.</div>'; return; }
+  const scopes = ['Resource', 'ResourceGroup', 'Subscription', 'All'];
+  const cats = [...new Set(STATE.tags.items.map(t => t.cat))];
+  let html = '<div class="table-wrap"><table><thead><tr><th>Tag Key</th>' + scopes.map(s => `<th>${s}</th>`).join('') + '<th>Required</th></tr></thead><tbody>';
+  STATE.tags.items.forEach(t => {
+    html += `<tr><td class="bold">${t.key}</td>`;
+    scopes.forEach(s => {
+      const applies = t.scope === 'All' || t.scope === s;
+      html += `<td>${applies ? '✅' : '—'}</td>`;
+    });
+    html += `<td>${t.required ? '✅' : '—'}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function loadTagTemplate(name) {
+  const tmpl = TAG_TEMPLATES[name];
+  if (!tmpl) return;
+  STATE.tags.items = tmpl.map(t => ({ ...t, values: t.values ? t.values.split(',').map(v=>v.trim()).filter(Boolean) : [] }));
+  saveState();
+  renderTagTable();
+  toast(`Template loaded!`, 'success');
+}
+
+function validateTagObject() {
+  const input = document.getElementById('tag-validator-input').value.trim();
+  const el = document.getElementById('tag-validator-result');
+  try {
+    const obj = JSON.parse(input);
+    const required = STATE.tags.items.filter(t => t.required);
+    const missing = required.filter(t => !obj.hasOwnProperty(t.key));
+    const invalid = [];
+    STATE.tags.items.forEach(t => {
+      if (obj[t.key] && t.values.length > 0 && !t.values.includes(obj[t.key])) {
+        invalid.push(`${t.key}: "${obj[t.key]}" not in allowed values [${t.values.join(', ')}]`);
+      }
+    });
+    if (missing.length === 0 && invalid.length === 0) {
+      el.innerHTML = '<span class="val-badge val-ok">✅ All required tags present and values valid!</span>';
+    } else {
+      const msgs = [...missing.map(t => `Missing required tag: <strong>${t.key}</strong>`), ...invalid];
+      el.innerHTML = msgs.map(m => `<div class="text-red text-sm mb-4">✗ ${m}</div>`).join('');
+    }
+  } catch(e) { el.innerHTML = '<span class="text-red text-sm">Invalid JSON</span>'; }
+}
+
+function exportTags(fmt) {
+  if (STATE.tags.items.length === 0) { toast('No tags defined', 'error'); return; }
+  if (fmt === 'json') {
+    downloadFile(JSON.stringify(STATE.tags.items, null, 2), 'azure-tag-schema.json', 'application/json');
+  } else if (fmt === 'csv') {
+    const rows = ['Key,Category,Required,AllowedValues,DefaultValue,Scope,Effect,Description'];
+    STATE.tags.items.forEach(t => rows.push(`"${t.key}","${t.cat}","${t.required}","${t.values.join('|')}","${t.def}","${t.scope}","${t.effect}","${t.desc}"`));
+    downloadFile(rows.join('\n'), 'azure-tag-schema.csv', 'text/csv');
+  } else if (fmt === 'policy') {
+    const policies = STATE.tags.items.filter(t => t.required).map(t => ({
+      name: `require-tag-${t.key.toLowerCase().replace(/\s/g,'-')}`,
+      displayName: `Require '${t.key}' tag`,
+      policyType: 'Custom',
+      mode: 'All',
+      description: t.desc,
+      policyRule: { if: { field: `tags['${t.key}']`, exists: false }, then: { effect: t.effect } }
+    }));
+    downloadFile(JSON.stringify(policies, null, 2), 'azure-tag-policies.json', 'application/json');
+  } else if (fmt === 'markdown') {
+    let md = '# Azure Resource Tagging Strategy\n\n| Tag Key | Category | Required | Allowed Values | Scope | Effect |\n|---------|----------|----------|----------------|-------|--------|\n';
+    STATE.tags.items.forEach(t => md += `| ${t.key} | ${t.cat} | ${t.required?'✅':'—'} | ${t.values.join(', ')||'Free text'} | ${t.scope} | ${t.effect} |\n`);
+    downloadFile(md, 'azure-tag-strategy.md', 'text/markdown');
+  }
+  toast('Exported!', 'success');
+}
+
+// ============================================================
+// TAB 4: LANDING ZONE
+// ============================================================
+const LZ_ALZ = {
+  mgs: [
+    {id:'root',name:'Tenant Root Group',parent:null,type:'Platform',desc:'Tenant root — policies applied here cascade to all'},
+    {id:'platform',name:'Platform',parent:'root',type:'Platform',desc:'Platform management group — Connectivity, Identity, Management'},
+    {id:'connectivity',name:'Connectivity',parent:'platform',type:'Platform',desc:'Hub networking resources — firewalls, gateways, DNS'},
+    {id:'identity',name:'Identity',parent:'platform',type:'Platform',desc:'Identity resources — AD DS, Entra ID, PIM'},
+    {id:'management',name:'Management',parent:'platform',type:'Platform',desc:'Management tools — Log Analytics, Automation, Update Manager'},
+    {id:'landingzones',name:'Landing Zones',parent:'root',type:'LandingZone',desc:'Workload landing zones — Corp and Online tiers'},
+    {id:'corp',name:'Corp',parent:'landingzones',type:'LandingZone',desc:'Private workloads connected to hub network, no direct internet'},
+    {id:'online',name:'Online',parent:'landingzones',type:'LandingZone',desc:'Internet-facing workloads, may have public endpoints'},
+    {id:'sandbox',name:'Sandbox',parent:'root',type:'Sandbox',desc:'Developer sandboxes — relaxed policies, isolated, no prod data'},
+    {id:'decommissioned',name:'Decommissioned',parent:'root',type:'Decommissioned',desc:'Subscriptions pending deletion — deny-all policies applied'},
+  ],
+  subs: [
+    {id:'sub_conn',name:'sub-connectivity-prod',parent:'connectivity',purpose:'Hub VNet, Firewall, VPN/ExpressRoute Gateway, Bastion',budget:8000,owner:'platform@company.com'},
+    {id:'sub_iden',name:'sub-identity-prod',parent:'identity',purpose:'Active Directory Domain Services, Entra ID Connect',budget:2000,owner:'identity@company.com'},
+    {id:'sub_mgmt',name:'sub-management-prod',parent:'management',purpose:'Log Analytics, Automation, Defender, Monitor',budget:3000,owner:'platform@company.com'},
+    {id:'sub_corp1',name:'sub-corp-workload-prod',parent:'corp',purpose:'Line of business applications — corp connected',budget:10000,owner:'appteam@company.com'},
+    {id:'sub_online1',name:'sub-online-web-prod',parent:'online',purpose:'Internet-facing web applications',budget:5000,owner:'webteam@company.com'},
+    {id:'sub_sbx',name:'sub-sandbox-dev',parent:'sandbox',purpose:'Developer experimentation — no production data',budget:500,owner:'devs@company.com'},
+  ]
+};
+
+function addMG() {
+  const name = document.getElementById('lz-mg-name').value.trim();
+  const id = document.getElementById('lz-mg-id').value.trim() || name.toLowerCase().replace(/\s+/g,'-');
+  const parent = document.getElementById('lz-mg-parent').value;
+  const type = document.getElementById('lz-mg-type').value;
+  if (!name) { toast('Name required', 'error'); return; }
+  if (STATE.lz.mgs.find(m => m.id === id)) { toast('ID already exists', 'error'); return; }
+  STATE.lz.mgs.push({ id, name, parent: parent || null, type, desc: '' });
+  document.getElementById('lz-mg-name').value = '';
+  document.getElementById('lz-mg-id').value = '';
+  saveState();
+  renderLZ();
+  toast('Management group added!', 'success');
+}
+
+function addSubscription() {
+  const name = document.getElementById('lz-sub-name').value.trim();
+  const parent = document.getElementById('lz-sub-parent').value;
+  if (!name || !parent) { toast('Name and parent MG required', 'error'); return; }
+  STATE.lz.subs.push({
+    id: 'sub_' + Date.now(),
+    name,
+    parent,
+    purpose: document.getElementById('lz-sub-purpose').value,
+    budget: parseInt(document.getElementById('lz-sub-budget').value) || 0,
+    owner: document.getElementById('lz-sub-owner').value,
+  });
+  document.getElementById('lz-sub-name').value = '';
+  saveState();
+  renderLZ();
+  toast('Subscription added!', 'success');
+}
+
+function loadLZTemplate(name) {
+  if (name === 'alz') {
+    STATE.lz.mgs = LZ_ALZ.mgs.map(m => ({...m}));
+    STATE.lz.subs = LZ_ALZ.subs.map(s => ({...s}));
+  } else {
+    STATE.lz.mgs = [
+      {id:'root',name:'Tenant Root Group',parent:null,type:'Platform'},
+      {id:'prod',name:'Production',parent:'root',type:'LandingZone'},
+      {id:'nonprod',name:'Non-Production',parent:'root',type:'LandingZone'},
+      {id:'sbx',name:'Sandbox',parent:'root',type:'Sandbox'},
+    ];
+    STATE.lz.subs = [
+      {id:'s1',name:'sub-shared-services',parent:'prod',purpose:'Shared services',budget:5000,owner:'admin@company.com'},
+      {id:'s2',name:'sub-workload-prod',parent:'prod',purpose:'Production workloads',budget:10000,owner:'appteam@company.com'},
+      {id:'s3',name:'sub-workload-dev',parent:'nonprod',purpose:'Dev workloads',budget:1000,owner:'devs@company.com'},
+    ];
+  }
+  saveState();
+  renderLZ();
+  toast('Template loaded!', 'success');
+}
+
+function clearLZ() { STATE.lz.mgs = []; STATE.lz.subs = []; saveState(); renderLZ(); }
+
+const mgTypeColors = { Platform:'#0078d4', LandingZone:'#3fb950', Sandbox:'#d29922', Decommissioned:'#8b949e', Custom:'#50e6ff' };
+const mgTypeIcons = { Platform:'🏢', LandingZone:'🚀', Sandbox:'🧪', Decommissioned:'🗑', Custom:'📦' };
+
+function buildTree(parentId) {
+  const children = STATE.lz.mgs.filter(m => m.parent === parentId || (parentId === null && m.parent === null));
+  if (children.length === 0) return '';
+  return `<ul class="mg-tree">` + children.map(m => {
+    const subs = STATE.lz.subs.filter(s => s.parent === m.id);
+    const color = mgTypeColors[m.type] || 'var(--border)';
+    const icon = mgTypeIcons[m.type] || '📦';
+    return `<li class="mg-node">
+      <div class="mg-node-content" style="border-color:${color}40">
+        <span class="mg-icon">${icon}</span>
+        <div style="flex:1">
+          <div class="bold text-sm">${m.name}</div>
+          ${m.desc ? `<div class="text-xs text-muted">${m.desc}</div>` : ''}
+        </div>
+        <span class="badge badge-blue" style="font-size:9px">${m.type}</span>
+        ${subs.length ? `<span class="sub-pill">${subs.length} sub${subs.length>1?'s':''}</span>` : ''}
+      </div>
+      ${subs.map(s => `<div style="margin-left:24px;margin-top:4px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:12px;display:flex;justify-content:space-between;align-items:center">
+        <span>📦 ${s.name}</span>
+        ${s.budget ? `<span class="text-muted">$${s.budget.toLocaleString()}/mo</span>` : ''}
+      </div>`).join('')}
+      ${buildTree(m.id)}
+    </li>`;
+  }).join('') + `</ul>`;
+}
+
+function renderLZ() {
+  const treeEl = document.getElementById('lz-tree');
+  if (STATE.lz.mgs.length === 0) {
+    treeEl.innerHTML = '<div class="text-sm text-muted text-center" style="padding:32px">Load a template or add management groups.</div>';
+  } else {
+    treeEl.innerHTML = buildTree(null);
+  }
+
+  // Update parent selects
+  const mgSelects = ['lz-mg-parent', 'lz-sub-parent'];
+  mgSelects.forEach(id => {
+    const sel = document.getElementById(id);
+    const currentVal = sel.value;
+    sel.innerHTML = id === 'lz-mg-parent' ? '<option value="">— Tenant Root —</option>' : '<option value="">— Select MG —</option>';
+    STATE.lz.mgs.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.id;
+      o.textContent = m.name;
+      if (m.id === currentVal) o.selected = true;
+      sel.appendChild(o);
+    });
+  });
+
+  // Sub table
+  const tbody = document.getElementById('lz-sub-tbody');
+  if (STATE.lz.subs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No subscriptions</td></tr>';
+  } else {
+    tbody.innerHTML = STATE.lz.subs.map((s, i) => {
+      const mg = STATE.lz.mgs.find(m => m.id === s.parent);
+      return `<tr>
+        <td class="bold">${s.name}</td>
+        <td class="text-muted text-sm">${mg ? mg.name : s.parent}</td>
+        <td class="text-xs">${s.purpose || '—'}</td>
+        <td>${s.budget ? '$' + s.budget.toLocaleString() : '—'}</td>
+        <td class="text-xs">${s.owner || '—'}</td>
+        <td><button class="btn-ghost btn-xs" onclick="removeSub(${i})">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function removeSub(i) { STATE.lz.subs.splice(i, 1); saveState(); renderLZ(); }
+
+function exportLZ(fmt) {
+  if (STATE.lz.mgs.length === 0) { toast('No data to export', 'error'); return; }
+  if (fmt === 'json') {
+    downloadFile(JSON.stringify({ managementGroups: STATE.lz.mgs, subscriptions: STATE.lz.subs }, null, 2), 'landing-zone.json', 'application/json');
+  } else if (fmt === 'markdown') {
+    let md = '# Azure Landing Zone — Management Group Hierarchy\n\n';
+    function mdTree(parentId, depth) {
+      const children = STATE.lz.mgs.filter(m => m.parent === parentId || (parentId === null && !m.parent));
+      children.forEach(m => {
+        md += '#'.repeat(Math.min(depth + 2, 6)) + ` ${m.name} (${m.type})\n`;
+        if (m.desc) md += `> ${m.desc}\n\n`;
+        const subs = STATE.lz.subs.filter(s => s.parent === m.id);
+        if (subs.length) { md += '**Subscriptions:**\n'; subs.forEach(s => md += `- ${s.name}: ${s.purpose||''}\n`); md += '\n'; }
+        mdTree(m.id, depth + 1);
+      });
+    }
+    mdTree(null, 0);
+    downloadFile(md, 'landing-zone.md', 'text/markdown');
+  } else if (fmt === 'terraform') {
+    let tf = '# Azure Landing Zone — Terraform Skeleton\n\n';
+    STATE.lz.mgs.slice(1).forEach(m => {
+      tf += `resource "azurerm_management_group" "${m.id}" {\n  display_name               = "${m.name}"\n  parent_management_group_id = ${m.parent && m.parent !== 'root' ? `azurerm_management_group.${m.parent}.id` : 'data.azurerm_management_group.root.id'}\n}\n\n`;
+    });
+    downloadFile(tf, 'landing-zone.tf', 'text/plain');
+  }
+  toast('Exported!', 'success');
+}
+
+// ============================================================
+// TAB 5: WAF CHECKLIST
+// ============================================================
+function initWAF() {
+  const pillarsEl = document.getElementById('waf-pillars');
+  const scoresEl = document.getElementById('waf-pillar-scores');
+  scoresEl.innerHTML = WAF_PILLARS.map(p => `
+    <div class="card text-center">
+      <div style="font-size:24px;margin-bottom:4px">${p.icon}</div>
+      <div class="pillar-score" id="waf-score-${p.id}">0%</div>
+      <div class="pillar-label">${p.name}</div>
+    </div>`).join('');
+
+  pillarsEl.innerHTML = WAF_PILLARS.map(p => `
+    <div class="card">
+      <div class="collapsible-header open" onclick="toggleCollapsible(this)">
+        <div class="coll-title">${p.icon} ${p.name} — <span id="waf-pct-${p.id}" class="text-azure">0%</span></div>
+        <span class="coll-arrow">▶</span>
+      </div>
+      <div class="collapsible-body open" id="waf-body-${p.id}">
+        <div class="flex-col">
+          ${p.items.map((item, i) => `
+            <div class="check-item ${STATE.waf.answers[p.id+'_'+i] ? '' : 'unchecked'}" id="waf-item-${p.id}-${i}">
+              <input type="checkbox" ${STATE.waf.answers[p.id+'_'+i] ? 'checked' : ''} onchange="wafCheck('${p.id}',${i},this.checked)" />
+              <div class="check-text">
+                <div class="check-q">${item.q}</div>
+                <div class="check-rec">💡 ${item.rec}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+  updateWAFScores();
+}
+
+function wafCheck(pillarId, idx, checked) {
+  STATE.waf.answers[pillarId + '_' + idx] = checked;
+  const item = document.getElementById(`waf-item-${pillarId}-${idx}`);
+  if (item) item.className = `check-item ${checked ? '' : 'unchecked'}`;
+  updateWAFScores();
+  saveState();
+}
+
+function updateWAFScores() {
+  const scores = WAF_PILLARS.map(p => {
+    const total = p.items.length;
+    const checked = p.items.filter((_, i) => STATE.waf.answers[p.id + '_' + i]).length;
+    const pct = Math.round((checked / total) * 100);
+    document.getElementById(`waf-score-${p.id}`).textContent = pct + '%';
+    document.getElementById(`waf-pct-${p.id}`).textContent = pct + '%';
+    return { id: p.id, pct, name: p.name, color: p.color };
+  });
+  const overall = Math.round(scores.reduce((a, s) => a + s.pct, 0) / scores.length);
+  document.getElementById('waf-overall').textContent = overall + '%';
+  drawRadar(scores);
+}
+
+function drawRadar(scores) {
+  const svg = document.getElementById('waf-radar');
+  const cx = 160, cy = 160, R = 130, n = scores.length;
+  const angle = (i) => (i * 2 * Math.PI / n) - Math.PI / 2;
+  const pt = (r, i) => [cx + r * Math.cos(angle(i)), cy + r * Math.sin(angle(i))];
+
+  let html = '';
+  // Grid circles
+  [20, 40, 60, 80, 100].forEach(pct => {
+    const r = R * pct / 100;
+    const pts = scores.map((_, i) => pt(r, i)).map(p => p.join(',')).join(' ');
+    html += `<polygon points="${pts}" fill="none" stroke="#30363d" stroke-width="1"/>`;
+    html += `<text x="${cx}" y="${cy - r - 3}" fill="#6e7681" font-size="10" text-anchor="middle">${pct}%</text>`;
+  });
+  // Axes
+  scores.forEach((_, i) => {
+    const [x, y] = pt(R, i);
+    html += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#30363d" stroke-width="1"/>`;
+  });
+  // Labels
+  scores.forEach((s, i) => {
+    const [x, y] = pt(R + 18, i);
+    html += `<text x="${x}" y="${y + 4}" fill="${s.color}" font-size="11" text-anchor="middle" font-weight="600">${s.name.split(' ')[0]}</text>`;
+  });
+  // Data polygon
+  const dataPts = scores.map((s, i) => pt(R * s.pct / 100, i)).map(p => p.join(',')).join(' ');
+  html += `<polygon points="${dataPts}" fill="rgba(0,120,212,0.2)" stroke="#0078d4" stroke-width="2"/>`;
+  // Points
+  scores.forEach((s, i) => {
+    const [x, y] = pt(R * s.pct / 100, i);
+    html += `<circle cx="${x}" cy="${y}" r="4" fill="${s.color}" stroke="var(--bg)" stroke-width="2"/>`;
+  });
+  svg.innerHTML = html;
+}
+
+function resetWAF() { STATE.waf.answers = {}; saveState(); initWAF(); toast('WAF checklist reset', 'info'); }
+
+function exportWAF(fmt) {
+  const data = WAF_PILLARS.map(p => ({
+    pillar: p.name,
+    score: Math.round(p.items.filter((_, i) => STATE.waf.answers[p.id + '_' + i]).length / p.items.length * 100) + '%',
+    items: p.items.map((item, i) => ({ question: item.q, status: STATE.waf.answers[p.id + '_' + i] ? 'Yes' : 'No', recommendation: item.rec }))
+  }));
+  if (fmt === 'json') {
+    downloadFile(JSON.stringify({ assessmentDate: new Date().toISOString(), results: data }, null, 2), 'waf-assessment.json', 'application/json');
+  } else {
+    const rows = ['Pillar,Question,Status,Recommendation'];
+    data.forEach(p => p.items.forEach(item => rows.push(`"${p.pillar}","${item.question}","${item.status}","${item.recommendation}"`)));
+    downloadFile(rows.join('\n'), 'waf-assessment.csv', 'text/csv');
+  }
+  toast('WAF exported!', 'success');
+}
+
+// ============================================================
+// TAB 6: COST ESTIMATOR
+// ============================================================
+function initCost() {
+  const sel = document.getElementById('cost-res-type');
+  let lastCat = '';
+  COST_RESOURCES.forEach(r => {
+    if (r.cat !== lastCat) {
+      const og = document.createElement('optgroup');
+      og.label = r.cat;
+      sel.appendChild(og);
+      lastCat = r.cat;
+    }
+    const o = document.createElement('option');
+    o.value = r.type;
+    o.textContent = r.type;
+    sel.lastChild.appendChild(o);
+  });
+  updateCostTiers();
+}
+
+function updateCostTiers() {
+  const type = document.getElementById('cost-res-type').value;
+  const res = COST_RESOURCES.find(r => r.type === type);
+  const sel = document.getElementById('cost-res-sku');
+  sel.innerHTML = '';
+  if (res) {
+    res.skus.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.price;
+      o.textContent = `${s.name} — $${s.price}/mo`;
+      sel.appendChild(o);
+    });
+  }
+}
+
+function addCostResource() {
+  const type = document.getElementById('cost-res-type').value;
+  const res = COST_RESOURCES.find(r => r.type === type);
+  const skuEl = document.getElementById('cost-res-sku');
+  const skuName = skuEl.options[skuEl.selectedIndex]?.text.split(' — ')[0] || '';
+  const qty = parseInt(document.getElementById('cost-res-qty').value) || 1;
+  const customPrice = parseFloat(document.getElementById('cost-res-custom').value);
+  const price = isNaN(customPrice) ? parseFloat(skuEl.value) : customPrice;
+  const label = document.getElementById('cost-res-label').value;
+  STATE.cost.items.push({ type, cat: res?.cat || 'Other', sku: skuName, qty, price, label, id: 'c_' + Date.now() });
+  document.getElementById('cost-res-custom').value = '';
+  document.getElementById('cost-res-label').value = '';
+  saveState();
+  updateCostTotals();
+  toast('Resource added!', 'success');
+}
+
+function removeCostItem(id) {
+  STATE.cost.items = STATE.cost.items.filter(c => c.id !== id);
+  saveState();
+  updateCostTotals();
+}
+
+function updateCostTotals() {
+  const riDisc = parseInt(document.getElementById('cost-ri-discount').value) || 0;
+  const ahb = parseInt(document.getElementById('cost-ahb').value) || 0;
+  const devtest = parseInt(document.getElementById('cost-devtest').value) || 0;
+  const showAnnual = document.getElementById('cost-show-annual').checked;
+
+  const tbody = document.getElementById('cost-tbody');
+  if (STATE.cost.items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No resources. Load a template or add manually.</td></tr>';
+    document.getElementById('cost-total-monthly').textContent = '$0';
+    document.getElementById('cost-by-category').innerHTML = '';
+    document.getElementById('cost-progress-chart').innerHTML = '';
+    return;
+  }
+
+  let grandTotal = 0;
+  const catTotals = {};
+
+  tbody.innerHTML = STATE.cost.items.map(item => {
+    let price = item.price;
+    if (riDisc > 0 && item.cat === 'Compute') price *= (1 - riDisc/100);
+    if (ahb > 0 && item.cat === 'Compute') price *= (1 - ahb/100 * 0.5);
+    if (devtest > 0) price *= (1 - devtest/100);
+    const lineTotal = price * item.qty;
+    grandTotal += lineTotal;
+    catTotals[item.cat] = (catTotals[item.cat] || 0) + lineTotal;
+    const display = showAnnual ? lineTotal * 12 : lineTotal;
+    const unit = showAnnual ? item.price * 12 : item.price;
+    return `<tr>
+      <td class="bold">${item.type}</td>
+      <td class="text-muted text-sm">${item.label || '—'}</td>
+      <td class="text-xs text-muted">${item.sku}</td>
+      <td>${item.qty}</td>
+      <td class="text-mono">$${unit.toFixed(0)}</td>
+      <td class="text-mono text-azure bold">$${display.toFixed(0)}</td>
+      <td><button class="btn-ghost btn-xs" onclick="removeCostItem('${item.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  const displayTotal = showAnnual ? grandTotal * 12 : grandTotal;
+  document.getElementById('cost-total-monthly').textContent = `$${displayTotal.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+  if (showAnnual) {
+    document.getElementById('cost-total-annual-label').textContent = ` (~$${(grandTotal).toLocaleString(undefined,{maximumFractionDigits:0})}/mo)`;
+    document.getElementById('cost-total-annual-label').style.display = '';
+  } else {
+    document.getElementById('cost-total-annual-label').style.display = 'none';
+  }
+
+  // Category breakdown chart
+  const catColors = { Compute:'#0078d4', Storage:'#50e6ff', Database:'#3fb950', Networking:'#d29922', Security:'#f85149', Monitoring:'#8957e5', Integration:'#e3b341', AI:'#ff8c00', Other:'#8b949e' };
+  const catEl = document.getElementById('cost-by-category');
+  catEl.innerHTML = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([cat, total]) => {
+    const pct = grandTotal > 0 ? Math.round(total/grandTotal*100) : 0;
+    return `<div class="cost-bar-item">
+      <div class="cost-bar-label">${cat}</div>
+      <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${pct}%;background:${catColors[cat]||'#8b949e'}"></div></div>
+      <div class="cost-bar-val">$${(showAnnual?total*12:total).toFixed(0)}</div>
+    </div>`;
+  }).join('');
+
+  // Progress chart
+  const progEl = document.getElementById('cost-progress-chart');
+  progEl.innerHTML = Object.entries(catTotals).map(([cat, total]) => {
+    const pct = grandTotal > 0 ? total/grandTotal*100 : 0;
+    return `<div title="${cat}: ${pct.toFixed(1)}%" style="display:inline-block;height:8px;width:${pct}%;background:${catColors[cat]||'#8b949e'};border-radius:2px"></div>`;
+  }).join('');
+}
+
+function loadCostTemplate(name) {
+  const templates = {
+    webapp: [
+      {type:'App Service Plan',cat:'Compute',sku:'P1v3 (Premium, 8GB RAM)',qty:2,price:138,label:'Web frontend'},
+      {type:'Azure SQL Database',cat:'Database',sku:'Standard S2 (50 DTUs)',qty:1,price:75,label:'Application database'},
+      {type:'Storage Account (Blob)',cat:'Storage',sku:'LRS Hot 1TB',qty:1,price:20,label:'Static assets & blobs'},
+      {type:'Application Insights',cat:'Monitoring',sku:'10GB/mo',qty:1,price:23,label:'App telemetry'},
+      {type:'Key Vault',cat:'Security',sku:'Standard (10k ops/mo)',qty:1,price:5,label:'Secrets store'},
+    ],
+    hub: [
+      {type:'Azure Firewall',cat:'Networking',sku:'Standard (no data processing)',qty:1,price:912,label:'Hub firewall'},
+      {type:'VPN Gateway',cat:'Networking',sku:'VpnGw1 (up to 650Mbps)',qty:1,price:140,label:'Site-to-site VPN'},
+      {type:'Azure Bastion',cat:'Networking',sku:'Standard',qty:1,price:280,label:'Bastion host'},
+      {type:'Log Analytics Workspace',cat:'Monitoring',sku:'Pay-per-GB 10GB/day',qty:1,price:230,label:'Central logging'},
+    ],
+    aks: [
+      {type:'AKS (node pool)',cat:'Compute',sku:'5x D4s v5 nodes',qty:1,price:700,label:'System node pool'},
+      {type:'AKS (node pool)',cat:'Compute',sku:'3x D2s v5 nodes',qty:2,price:210,label:'App node pools'},
+      {type:'Azure Container Apps',cat:'Compute',sku:'Consumption (medium ~100k req/day)',qty:1,price:45,label:'Microservices'},
+      {type:'Azure Cache for Redis',cat:'Database',sku:'C1 Standard 1GB',qty:1,price:88,label:'Session cache'},
+      {type:'Service Bus',cat:'Integration',sku:'Standard (12.5M ops/mo)',qty:1,price:10,label:'Message bus'},
+    ],
+    data: [
+      {type:'Log Analytics Workspace',cat:'Monitoring',sku:'Pay-per-GB 50GB/day',qty:1,price:1150,label:'Data lake analytics'},
+      {type:'Azure SQL Database',cat:'Database',sku:'GP Gen5 8vCore',qty:1,price:740,label:'Data warehouse'},
+      {type:'Storage Account (Blob)',cat:'Storage',sku:'LRS Cool 1TB',qty:5,price:10,label:'Data lake storage'},
+      {type:'Azure OpenAI (GPT-4o mini)',cat:'AI',sku:'~10M tokens/month',qty:1,price:10,label:'AI processing'},
+    ],
+  };
+  const tmpl = templates[name];
+  if (!tmpl) return;
+  STATE.cost.items = tmpl.map(t => ({...t, id:'c_'+Date.now()+Math.random()}));
+  saveState();
+  updateCostTotals();
+  toast('Template loaded!', 'success');
+}
+
+function clearCost() { STATE.cost.items = []; saveState(); updateCostTotals(); }
+function exportCost(fmt) {
+  if (STATE.cost.items.length === 0) { toast('No data', 'error'); return; }
+  if (fmt === 'csv') {
+    const rows = ['Type,Label,SKU,Quantity,Unit Price/mo,Line Total/mo'];
+    STATE.cost.items.forEach(i => rows.push(`"${i.type}","${i.label||''}","${i.sku}",${i.qty},${i.price},${i.price*i.qty}`));
+    downloadFile(rows.join('\n'), 'azure-cost-estimate.csv', 'text/csv');
+  } else {
+    downloadFile(JSON.stringify(STATE.cost.items, null, 2), 'azure-cost-estimate.json', 'application/json');
+  }
+  toast('Exported!', 'success');
+}
+
+// ============================================================
+// TAB 7: POLICY CATALOG
+// ============================================================
+function initPolicies() {
+  renderPolicies();
+}
+
+function renderPolicies() {
+  const grid = document.getElementById('pol-grid');
+  const search = document.getElementById('pol-search').value.toLowerCase();
+  const catFilter = document.getElementById('pol-category-filter').value;
+  const effFilter = document.getElementById('pol-effect-filter').value;
+  const filtered = POLICIES.filter(p =>
+    (!search || p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search)) &&
+    (!catFilter || p.cat === catFilter) &&
+    (!effFilter || p.effect === effFilter)
+  );
+  const effectClass = { Deny:'deny', Audit:'audit', Modify:'modify', DeployIfNotExists:'dine' };
+  grid.innerHTML = filtered.map(p => `
+    <div class="policy-card ${STATE.policy.selected.has(p.id) ? 'selected' : ''}" onclick="togglePolicy('${p.id}')">
+      <div class="flex items-center justify-between mb-4">
+        <span class="bold text-sm">${p.name}</span>
+        <span class="policy-effect effect-${effectClass[p.effect]||'audit'}">${p.effect}</span>
+      </div>
+      <div class="text-xs text-muted mb-4">${p.desc}</div>
+      <div class="flex items-center justify-between">
+        <span class="badge badge-blue" style="font-size:9px">${p.cat}</span>
+        <button class="btn-ghost btn-xs" onclick="event.stopPropagation();previewPolicy('${p.id}')">Preview Rule</button>
+      </div>
+    </div>`).join('');
+
+  // Selected count + chips
+  document.getElementById('pol-selected-count').textContent = STATE.policy.selected.size;
+  const chips = document.getElementById('pol-selected-chips');
+  chips.innerHTML = [...STATE.policy.selected].map(id => {
+    const p = POLICIES.find(p => p.id === id);
+    return p ? `<span class="tag-chip">${p.name.substring(0,30)}${p.name.length>30?'...':''} <span class="remove" onclick="togglePolicy('${id}')">×</span></span>` : '';
+  }).join('');
+}
+
+function filterPolicies() { renderPolicies(); }
+
+function togglePolicy(id) {
+  if (STATE.policy.selected.has(id)) STATE.policy.selected.delete(id);
+  else STATE.policy.selected.add(id);
+  saveState();
+  renderPolicies();
+}
+
+function previewPolicy(id) {
+  const p = POLICIES.find(p => p.id === id);
+  if (!p) return;
+  const obj = { name: p.name, description: p.desc, effect: p.effect, policyRule: JSON.parse(p.rule) };
+  document.getElementById('pol-preview').textContent = JSON.stringify(obj, null, 2);
+}
+
+function clearPolicySelection() { STATE.policy.selected.clear(); saveState(); renderPolicies(); }
+
+function exportPolicies(fmt) {
+  const selected = POLICIES.filter(p => STATE.policy.selected.has(p.id));
+  if (selected.length === 0) { toast('No policies selected', 'error'); return; }
+  const name = document.getElementById('pol-init-name').value || 'custom-governance-initiative';
+  const desc = document.getElementById('pol-init-desc').value || 'Custom governance policy initiative';
+
+  if (fmt === 'json') {
+    const init = {
+      name,
+      displayName: name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      description: desc,
+      policyDefinitions: selected.map((p, i) => ({
+        policyDefinitionId: `/providers/Microsoft.Authorization/policyDefinitions/${p.id}`,
+        policyDefinitionReferenceId: `${p.id}_${i}`,
+        parameters: {}
+      }))
+    };
+    downloadFile(JSON.stringify(init, null, 2), `${name}.json`, 'application/json');
+  } else {
+    let tf = `# Terraform — Azure Policy Initiative\n\nresource "azurerm_policy_set_definition" "${name.replace(/-/g,'_')}" {\n  name         = "${name}"\n  policy_type  = "Custom"\n  display_name = "${name}"\n  description  = "${desc}"\n\n`;
+    selected.forEach(p => {
+      tf += `  policy_definition_reference {\n    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/${p.id}"\n    reference_id         = "${p.id}"\n  }\n\n`;
+    });
+    tf += '}\n';
+    downloadFile(tf, `${name}.tf`, 'text/plain');
+  }
+  toast(`Exported ${selected.length} policies!`, 'success');
+}
+
+// ============================================================
+// COLLAPSIBLE
+// ============================================================
+function toggleCollapsible(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  loadState();
+  initNaming();
+  renderCIDR();
+  renderTagTable();
+  renderLZ();
+  initWAF();
+  initCost();
+  initPolicies();
+});
+
+</script>
+</body>
+</html>
