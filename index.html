@@ -324,6 +324,110 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .header-badges { display: none; }
 }
+
+/* ===================== DIAGRAM STYLES ===================== */
+#dgm-canvas-wrap {
+  position: relative; background: #0a0e14;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; flex: 1; min-height: 600px; cursor: default;
+  background-image: radial-gradient(circle, #1e2630 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+#dgm-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.dgm-node {
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  gap: 5px; cursor: grab; user-select: none; z-index: 10;
+  padding: 10px 12px; border-radius: 10px; min-width: 90px; max-width: 120px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,.5); transition: border-color .15s, box-shadow .15s;
+  text-align: center;
+}
+.dgm-node:active { cursor: grabbing; }
+.dgm-node.selected { border-color: var(--azure); box-shadow: 0 0 0 2px rgba(0,120,212,.3), 0 2px 12px rgba(0,0,0,.5); z-index: 20; }
+.dgm-node.connecting { border-color: var(--azure-light); }
+.dgm-node-icon { font-size: 26px; line-height: 1; }
+.dgm-node-label {
+  font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.2;
+  word-break: break-word; text-align: center; max-width: 100%;
+}
+.dgm-node-sub { font-size: 10px; color: var(--text2); line-height: 1.2; }
+.dgm-node-badge {
+  font-size: 9px; padding: 1px 5px; border-radius: 8px; font-weight: 700;
+  background: rgba(0,120,212,.15); color: var(--azure-light); border: 1px solid rgba(0,120,212,.2);
+}
+.dgm-conn-port {
+  position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--azure); border: 2px solid var(--bg); cursor: crosshair;
+  opacity: 0; transition: opacity .15s; z-index: 30;
+}
+.dgm-node:hover .dgm-conn-port { opacity: 1; }
+.dgm-conn-port.top    { top: -5px;    left: 50%; transform: translateX(-50%); }
+.dgm-conn-port.bottom { bottom: -5px; left: 50%; transform: translateX(-50%); }
+.dgm-conn-port.left   { left: -5px;   top: 50%;  transform: translateY(-50%); }
+.dgm-conn-port.right  { right: -5px;  top: 50%;  transform: translateY(-50%); }
+
+/* Toolbar */
+#dgm-toolbar {
+  display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  flex-wrap: wrap;
+}
+.dgm-tool-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.dgm-tool-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+  cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all .15s;
+  white-space: nowrap;
+}
+.dgm-tool-btn:hover { border-color: var(--azure); color: var(--text); }
+.dgm-tool-btn.active { background: rgba(0,120,212,.15); border-color: var(--azure); color: var(--azure-light); }
+.dgm-mode-label { font-size: 11px; color: var(--text3); padding: 0 4px; }
+
+/* Component palette */
+#dgm-palette {
+  width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;
+  max-height: 700px; overflow-y: auto;
+}
+.dgm-palette-section { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; padding: 6px 0 2px; }
+.dgm-palette-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  cursor: grab; font-size: 12px; color: var(--text); transition: border-color .15s;
+  user-select: none;
+}
+.dgm-palette-item:hover { border-color: var(--azure); color: var(--azure-light); }
+.dgm-palette-item .icon { font-size: 18px; flex-shrink: 0; }
+
+/* Sidebar properties */
+#dgm-props {
+  width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
+}
+
+/* Connection label on SVG */
+.dgm-conn-label { font-size: 10px; fill: var(--text2); font-family: var(--font); }
+
+/* Upload zone */
+#dgm-upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius); padding: 20px;
+  text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
+  color: var(--text2); font-size: 13px;
+}
+#dgm-upload-zone:hover, #dgm-upload-zone.drag-over { border-color: var(--azure); background: rgba(0,120,212,.05); color: var(--azure-light); }
+
+/* Mini-map */
+#dgm-minimap {
+  position: absolute; bottom: 12px; right: 12px; width: 140px; height: 90px;
+  background: rgba(13,17,23,.85); border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; z-index: 50; backdrop-filter: blur(4px);
+}
+#dgm-minimap-canvas { width: 100%; height: 100%; }
+
+/* Zone/group node */
+.dgm-zone {
+  position: absolute; border: 2px dashed; border-radius: 12px;
+  z-index: 1; pointer-events: none; display: flex; align-items: flex-start; padding: 8px 12px;
+}
+.dgm-zone-label { font-size: 11px; font-weight: 700; opacity: .7; }
 </style>
 </head>
 <body>
@@ -367,6 +471,9 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
     </button>
     <button class="tab-btn" onclick="switchTab('policy')" id="tab-btn-policy">
       <span class="tab-icon">🛡️</span> Policy Catalog
+    </button>
+    <button class="tab-btn" onclick="switchTab('diagram')" id="tab-btn-diagram">
+      <span class="tab-icon">🗺️</span> Architecture Diagram
     </button>
   </div>
 </div>
@@ -1133,6 +1240,223 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
     </div>
   </div>
 </div>
+
+<!-- ==================== TAB 8: DIAGRAM ==================== -->
+<div class="tab-panel" id="tab-diagram">
+  <div class="section-header">
+    <div class="section-title">🗺️ Azure Architecture Diagram Builder</div>
+    <div class="section-desc">Drag and drop Azure components onto the canvas to build Visio-style architecture diagrams. Connect nodes, add labels, group into zones, and export as PNG or SVG.</div>
+  </div>
+
+  <!-- Toolbar -->
+  <div id="dgm-toolbar" class="mb-8">
+    <button class="dgm-tool-btn active" id="dgm-btn-select" onclick="dgmSetMode('select')" title="Select & move nodes (V)">↖ Select</button>
+    <button class="dgm-tool-btn" id="dgm-btn-connect" onclick="dgmSetMode('connect')" title="Draw connections (C)">🔗 Connect</button>
+    <button class="dgm-tool-btn" id="dgm-btn-zone" onclick="dgmSetMode('zone')" title="Draw a zone/group box (Z)">⬜ Zone</button>
+    <button class="dgm-tool-btn" id="dgm-btn-text" onclick="dgmSetMode('text')" title="Add text label (T)">T Label</button>
+    <div class="dgm-tool-sep"></div>
+    <button class="dgm-tool-btn" onclick="dgmUndo()" title="Undo (Ctrl+Z)">↩ Undo</button>
+    <button class="dgm-tool-btn" onclick="dgmRedo()" title="Redo (Ctrl+Y)">↪ Redo</button>
+    <button class="dgm-tool-btn" onclick="dgmDeleteSelected()" title="Delete selected (Del)">🗑 Delete</button>
+    <div class="dgm-tool-sep"></div>
+    <button class="dgm-tool-btn" onclick="dgmAutoLayout()" title="Auto arrange nodes">⚡ Auto Layout</button>
+    <button class="dgm-tool-btn" onclick="dgmFitView()" title="Fit all nodes in view">⊡ Fit View</button>
+    <div class="dgm-tool-sep"></div>
+    <button class="dgm-tool-btn" onclick="dgmLoadTemplate('hub-spoke')" title="Load hub-spoke template">🌐 Hub-Spoke</button>
+    <button class="dgm-tool-btn" onclick="dgmLoadTemplate('zero-trust')" title="Load Zero Trust template">🔒 Zero Trust</button>
+    <button class="dgm-tool-btn" onclick="dgmLoadTemplate('web-app')" title="Load 3-tier web app template">🌍 Web App</button>
+    <button class="dgm-tool-btn" onclick="dgmLoadTemplate('landing-zone')" title="Load landing zone template">🏗 Landing Zone</button>
+    <div class="dgm-tool-sep"></div>
+    <button class="dgm-tool-btn" onclick="dgmExport('png')" title="Export as PNG">⬇ PNG</button>
+    <button class="dgm-tool-btn" onclick="dgmExport('svg')" title="Export as SVG">⬇ SVG</button>
+    <button class="dgm-tool-btn" onclick="dgmExport('json')" title="Save diagram as JSON">💾 Save JSON</button>
+    <label class="dgm-tool-btn" title="Load saved JSON diagram" style="cursor:pointer">
+      📂 Load JSON <input type="file" id="dgm-load-file" accept=".json" style="display:none" onchange="dgmImportJSON(this)">
+    </label>
+    <div class="dgm-tool-sep"></div>
+    <button class="dgm-tool-btn" onclick="dgmClear()" title="Clear canvas">✕ Clear</button>
+    <div class="dgm-mode-label" id="dgm-mode-label">Mode: Select</div>
+  </div>
+
+  <!-- Upload banner (shows when canvas empty) -->
+  <div id="dgm-upload-zone" class="mb-8" onclick="document.getElementById('dgm-load-file').click()"
+       ondragover="event.preventDefault();this.classList.add('drag-over')"
+       ondragleave="this.classList.remove('drag-over')"
+       ondrop="dgmHandleDrop(event)">
+    <div style="font-size:28px;margin-bottom:8px">📂</div>
+    <div class="bold mb-4">Drop a JSON diagram here to reload it</div>
+    <div class="text-xs text-muted">Or click to browse — supports previously exported diagram JSON files</div>
+  </div>
+
+  <div style="display:flex;gap:12px;height:700px">
+
+    <!-- LEFT: Palette -->
+    <div id="dgm-palette">
+
+      <div class="dgm-palette-section">Core</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Resource Group','📦','rg','#0078d4')"><span class="icon">📦</span>Resource Group</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Subscription','🔷','sub','#0078d4')"><span class="icon">🔷</span>Subscription</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Management Group','🏢','mg','#8957e5')"><span class="icon">🏢</span>Mgmt Group</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Region','🌍','region','#3fb950')"><span class="icon">🌍</span>Azure Region</div>
+
+      <div class="dgm-palette-section">Networking</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Virtual Network','🌐','vnet','#50e6ff')"><span class="icon">🌐</span>VNet</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Subnet','⬜','snet','#30b0c7')"><span class="icon">⬜</span>Subnet</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Azure Firewall','🔥','afw','#f85149')"><span class="icon">🔥</span>Firewall</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'VPN Gateway','🔑','vpng','#d29922')"><span class="icon">🔑</span>VPN Gateway</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'ExpressRoute','⚡','ergw','#f0a500')"><span class="icon">⚡</span>ExpressRoute</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Load Balancer','⚖️','lb','#0078d4')"><span class="icon">⚖️</span>Load Balancer</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'App Gateway','🚪','agw','#0078d4')"><span class="icon">🚪</span>App Gateway</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Bastion','🛡️','bas','#8957e5')"><span class="icon">🛡️</span>Bastion</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'NSG','🔒','nsg','#d29922')"><span class="icon">🔒</span>NSG</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Azure DNS','🌀','dns','#50e6ff')"><span class="icon">🌀</span>Azure DNS</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Front Door','🚀','fd','#0078d4')"><span class="icon">🚀</span>Front Door</div>
+
+      <div class="dgm-palette-section">Compute</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Virtual Machine','🖥️','vm','#0078d4')"><span class="icon">🖥️</span>Virtual Machine</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'VMSS','🖥️','vmss','#0078d4')"><span class="icon">🖥️</span>VM Scale Set</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'AKS Cluster','☸️','aks','#326ce5')"><span class="icon">☸️</span>AKS</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'App Service','🌐','app','#3fb950')"><span class="icon">🌐</span>App Service</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Function App','⚡','func','#f0a500')"><span class="icon">⚡</span>Function App</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Container App','📦','ca','#50e6ff')"><span class="icon">📦</span>Container App</div>
+
+      <div class="dgm-palette-section">Data & Storage</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'SQL Database','🗄️','sqldb','#0078d4')"><span class="icon">🗄️</span>SQL Database</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Cosmos DB','🌌','cosmos','#3fb950')"><span class="icon">🌌</span>Cosmos DB</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Storage Account','💾','st','#0078d4')"><span class="icon">💾</span>Storage</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Redis Cache','⚡','redis','#f85149')"><span class="icon">⚡</span>Redis Cache</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Data Lake','🏞️','dls','#50e6ff')"><span class="icon">🏞️</span>Data Lake</div>
+
+      <div class="dgm-palette-section">Security & Identity</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Key Vault','🗝️','kv','#d29922')"><span class="icon">🗝️</span>Key Vault</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Entra ID','👤','entra','#0078d4')"><span class="icon">👤</span>Entra ID</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Managed Identity','🪪','id','#8957e5')"><span class="icon">🪪</span>Managed Identity</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Defender for Cloud','🛡️','mdc','#f85149')"><span class="icon">🛡️</span>Defender</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Sentinel','🔭','siem','#8957e5')"><span class="icon">🔭</span>Sentinel</div>
+
+      <div class="dgm-palette-section">Integration & AI</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Service Bus','📨','sbns','#0078d4')"><span class="icon">📨</span>Service Bus</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Event Hub','📡','evhns','#3fb950')"><span class="icon">📡</span>Event Hub</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'API Management','🔌','apim','#f0a500')"><span class="icon">🔌</span>APIM</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Logic App','⚙️','logic','#8957e5')"><span class="icon">⚙️</span>Logic App</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Azure OpenAI','🤖','oai','#50e6ff')"><span class="icon">🤖</span>Azure OpenAI</div>
+
+      <div class="dgm-palette-section">Monitoring</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Log Analytics','📊','log','#8957e5')"><span class="icon">📊</span>Log Analytics</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'App Insights','📈','appi','#3fb950')"><span class="icon">📈</span>App Insights</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Azure Monitor','📉','mon','#0078d4')"><span class="icon">📉</span>Monitor</div>
+
+      <div class="dgm-palette-section">External</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Internet','🌍','internet','#3fb950')"><span class="icon">🌍</span>Internet</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'On-Premises','🏢','onprem','#8b949e')"><span class="icon">🏢</span>On-Premises</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'User / Client','👤','user','#50e6ff')"><span class="icon">👤</span>User / Client</div>
+      <div class="dgm-palette-item" draggable="true" ondragstart="dgmPaletteDrag(event,'Third-Party','🔗','ext','#8b949e')"><span class="icon">🔗</span>Third-Party</div>
+
+    </div>
+
+    <!-- CENTRE: Canvas -->
+    <div id="dgm-canvas-wrap"
+         ondragover="event.preventDefault()"
+         ondrop="dgmCanvasDrop(event)"
+         onmousedown="dgmCanvasMouseDown(event)"
+         onmousemove="dgmCanvasMouseMove(event)"
+         onmouseup="dgmCanvasMouseUp(event)"
+         onclick="dgmCanvasClick(event)"
+         onwheel="dgmCanvasWheel(event)">
+      <svg id="dgm-canvas" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e"/>
+          </marker>
+          <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#0078d4"/>
+          </marker>
+          <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#50e6ff"/>
+          </marker>
+        </defs>
+        <g id="dgm-zones-layer"></g>
+        <g id="dgm-edges-layer"></g>
+      </svg>
+      <!-- Nodes rendered as HTML divs on top of SVG -->
+      <div id="dgm-nodes-layer"></div>
+      <!-- Mini-map -->
+      <div id="dgm-minimap">
+        <canvas id="dgm-minimap-canvas"></canvas>
+      </div>
+      <!-- Zoom indicator -->
+      <div style="position:absolute;bottom:12px;left:12px;font-size:11px;color:var(--text3);background:rgba(13,17,23,.7);padding:3px 8px;border-radius:4px" id="dgm-zoom-label">100%</div>
+    </div>
+
+    <!-- RIGHT: Properties -->
+    <div id="dgm-props">
+      <div class="card" style="padding:12px">
+        <div class="card-title" style="font-size:12px">Properties</div>
+        <div id="dgm-props-body" class="text-sm text-muted">Select a node to edit its properties.</div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="card-title" style="font-size:12px">Canvas</div>
+        <div class="flex-col gap-8 text-sm">
+          <div class="flex justify-between"><span class="text-muted">Nodes:</span><span id="dgm-stat-nodes">0</span></div>
+          <div class="flex justify-between"><span class="text-muted">Connections:</span><span id="dgm-stat-edges">0</span></div>
+          <div class="flex justify-between"><span class="text-muted">Zones:</span><span id="dgm-stat-zones">0</span></div>
+        </div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="card-title" style="font-size:12px">Connection Style</div>
+        <div class="flex-col gap-6">
+          <div>
+            <label>Line type</label>
+            <select id="dgm-edge-style" onchange="dgmUpdateEdgeStyle()">
+              <option value="curved">Curved</option>
+              <option value="straight">Straight</option>
+              <option value="stepped">Stepped</option>
+            </select>
+          </div>
+          <div>
+            <label>Label</label>
+            <input type="text" id="dgm-edge-label" placeholder="e.g. HTTPS 443" oninput="dgmUpdateEdgeLabel()" />
+          </div>
+          <div class="toggle">
+            <input type="checkbox" id="dgm-edge-bidirectional" onchange="dgmUpdateEdgeDir()" />
+            <span class="toggle-label" style="font-size:12px">Bidirectional</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="card-title" style="font-size:12px">Diagram Info</div>
+        <div class="flex-col gap-6">
+          <div>
+            <label>Title</label>
+            <input type="text" id="dgm-title" placeholder="My Azure Architecture" />
+          </div>
+          <div>
+            <label>Author</label>
+            <input type="text" id="dgm-author" placeholder="Your name" />
+          </div>
+          <div>
+            <label>Version</label>
+            <input type="text" id="dgm-version" placeholder="1.0" />
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="card-title" style="font-size:12px">💡 Tips</div>
+        <div class="flex-col gap-4 text-xs text-muted">
+          <div>🖱 Drag from palette → canvas</div>
+          <div>🔗 Connect mode: click source, then target node</div>
+          <div>✏️ Double-click a node to rename</div>
+          <div>⬜ Zone mode: draw a group box</div>
+          <div>🖱 Scroll to zoom in/out</div>
+          <div>Space + drag to pan canvas</div>
+          <div>Del to delete selected node</div>
+          <div>Ctrl+Z / Ctrl+Y to undo/redo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ==================== END DIAGRAM ==================== -->
 
 </div><!-- /main -->
 <div id="toast-container"></div>
@@ -2860,6 +3184,990 @@ function toggleCollapsible(header) {
 }
 
 // ============================================================
+// ARCHITECTURE DIAGRAM ENGINE
+// ============================================================
+const DGM = {
+  nodes: [],
+  edges: [],
+  zones: [],
+  selected: null,
+  mode: 'select',
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  history: [],
+  future: [],
+  connStart: null,
+  dragging: null,
+  panning: false,
+  panStart: null,
+  zoneDrawing: null,
+  nodeIdSeq: 0,
+  edgeIdSeq: 0,
+  zoneIdSeq: 0,
+  pendingDrag: null,
+  _connPreview: null,
+};
+
+function dgmInit() {
+  const canvas = document.getElementById('dgm-canvas-wrap');
+  if (!canvas) return;
+  // The HTML already has inline event handlers on the canvas; add only extras
+  canvas.addEventListener('dblclick', dgmCanvasDblClick);
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    // Only activate when diagram tab is visible
+    const diagramTab = document.getElementById('tab-diagram');
+    if (!diagramTab || !diagramTab.classList.contains('active')) return;
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      dgmDeleteSelected();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); dgmUndo(); }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); dgmRedo(); }
+    if (e.key === 'v' || e.key === 'V') { if (document.activeElement === document.body || document.activeElement.tagName === 'BUTTON') dgmSetMode('select'); }
+    if (e.key === 'c' || e.key === 'C') { if (document.activeElement === document.body || document.activeElement.tagName === 'BUTTON') dgmSetMode('connect'); }
+    if (e.key === 'z' && !e.ctrlKey) { if (document.activeElement === document.body || document.activeElement.tagName === 'BUTTON') dgmSetMode('zone'); }
+    if (e.key === 't' || e.key === 'T') { if (document.activeElement === document.body || document.activeElement.tagName === 'BUTTON') dgmSetMode('text'); }
+    if (e.key === 'Escape') { DGM.selected = null; DGM.connStart = null; dgmRender(); dgmRenderProps(); }
+  });
+  dgmRender();
+  dgmUpdateStats();
+}
+
+/* ---- Mode ---- */
+function dgmSetMode(mode) {
+  DGM.mode = mode;
+  DGM.connStart = null;
+  DGM.zoneDrawing = null;
+  DGM._connPreview = null;
+  // Update toolbar button states
+  ['select','connect','zone','text'].forEach(m => {
+    const btn = document.getElementById('dgm-btn-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  const lbl = document.getElementById('dgm-mode-label');
+  if (lbl) lbl.textContent = 'Mode: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  const canvas = document.getElementById('dgm-canvas-wrap');
+  if (canvas) canvas.style.cursor = (mode === 'connect' || mode === 'zone') ? 'crosshair' : 'default';
+}
+
+/* ---- Palette drag ---- */
+function dgmPaletteDrag(e, label, icon, abbr, color) {
+  DGM.pendingDrag = {label, icon, abbr, color};
+  e.dataTransfer.effectAllowed = 'copy';
+  e.dataTransfer.setData('text/plain', label);
+}
+
+/* ---- Canvas coords ---- */
+function dgmCanvasCoords(e) {
+  const wrap = document.getElementById('dgm-canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left - DGM.panX) / DGM.zoom,
+    y: (e.clientY - rect.top  - DGM.panY) / DGM.zoom,
+  };
+}
+
+function dgmClientCoords(e) {
+  const wrap = document.getElementById('dgm-canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+/* ---- Drop from palette ---- */
+function dgmCanvasDrop(e) {
+  e.preventDefault();
+  if (!DGM.pendingDrag) return;
+  const pos = dgmCanvasCoords(e);
+  dgmPushHistory();
+  const node = {
+    id: 'n' + (++DGM.nodeIdSeq),
+    x: pos.x - 40, y: pos.y - 40,
+    label: DGM.pendingDrag.label,
+    icon: DGM.pendingDrag.icon,
+    abbr: DGM.pendingDrag.abbr,
+    color: DGM.pendingDrag.color,
+    w: 80, h: 80
+  };
+  DGM.nodes.push(node);
+  DGM.pendingDrag = null;
+  dgmRender();
+  dgmSelect('node', node.id);
+  dgmUpdateStats();
+}
+
+/* ---- Mouse events ---- */
+function dgmCanvasMouseDown(e) {
+  if (e.button !== 0) return;
+  const pos = dgmCanvasCoords(e);
+  const client = dgmClientCoords(e);
+
+  // Check if clicking a node
+  const hitNode = dgmNodeAt(pos.x, pos.y);
+  const hitZone = dgmZoneAt(pos.x, pos.y);
+
+  if (DGM.mode === 'connect') {
+    if (hitNode) {
+      DGM.connStart = hitNode.id;
+      e.stopPropagation();
+    }
+    return;
+  }
+
+  if (DGM.mode === 'zone') {
+    DGM.zoneDrawing = {x: pos.x, y: pos.y, w: 0, h: 0};
+    dgmRender();
+    return;
+  }
+
+  if (DGM.mode === 'text') return;
+
+  if (hitNode) {
+    dgmSelect('node', hitNode.id);
+    dgmPushHistory();
+    DGM.dragging = {type:'node', id: hitNode.id, startX: client.x, startY: client.y, origX: hitNode.x, origY: hitNode.y};
+    e.stopPropagation();
+    return;
+  }
+
+  // Check edge click
+  const hitEdge = dgmEdgeAt(pos.x, pos.y);
+  if (hitEdge) {
+    dgmSelect('edge', hitEdge.id);
+    e.stopPropagation();
+    return;
+  }
+
+  // Zone drag
+  if (hitZone) {
+    dgmSelect('zone', hitZone.id);
+    dgmPushHistory();
+    DGM.dragging = {type:'zone', id: hitZone.id, startX: client.x, startY: client.y, origX: hitZone.x, origY: hitZone.y};
+    e.stopPropagation();
+    return;
+  }
+
+  // Pan
+  DGM.panning = true;
+  DGM.panStart = {x: client.x - DGM.panX, y: client.y - DGM.panY};
+  DGM.selected = null;
+  dgmRender();
+  dgmRenderProps();
+}
+
+function dgmCanvasMouseMove(e) {
+  const client = dgmClientCoords(e);
+  const pos = dgmCanvasCoords(e);
+
+  if (DGM.mode === 'zone' && DGM.zoneDrawing) {
+    DGM.zoneDrawing.w = pos.x - DGM.zoneDrawing.x;
+    DGM.zoneDrawing.h = pos.y - DGM.zoneDrawing.y;
+    dgmRender();
+    return;
+  }
+
+  if (DGM.panning && DGM.panStart) {
+    DGM.panX = client.x - DGM.panStart.x;
+    DGM.panY = client.y - DGM.panStart.y;
+    dgmRender();
+    return;
+  }
+
+  if (DGM.dragging) {
+    const dx = (client.x - DGM.dragging.startX) / DGM.zoom;
+    const dy = (client.y - DGM.dragging.startY) / DGM.zoom;
+    if (DGM.dragging.type === 'node') {
+      const node = DGM.nodes.find(n => n.id === DGM.dragging.id);
+      if (node) { node.x = DGM.dragging.origX + dx; node.y = DGM.dragging.origY + dy; }
+    } else if (DGM.dragging.type === 'zone') {
+      const zone = DGM.zones.find(z => z.id === DGM.dragging.id);
+      if (zone) { zone.x = DGM.dragging.origX + dx; zone.y = DGM.dragging.origY + dy; }
+    }
+    dgmRender();
+    return;
+  }
+
+  // Hover edge highlight
+  if (DGM.mode === 'connect' && DGM.connStart) {
+    dgmRenderConnPreview(pos);
+  }
+}
+
+function dgmCanvasMouseUp(e) {
+  const pos = dgmCanvasCoords(e);
+
+  if (DGM.mode === 'connect' && DGM.connStart) {
+    const hitNode = dgmNodeAt(pos.x, pos.y);
+    if (hitNode && hitNode.id !== DGM.connStart) {
+      dgmPushHistory();
+      DGM.edges.push({
+        id: 'e' + (++DGM.edgeIdSeq),
+        from: DGM.connStart, to: hitNode.id,
+        style: 'solid', label: '', bidir: false
+      });
+      dgmUpdateStats();
+    }
+    DGM.connStart = null;
+    dgmRender();
+    return;
+  }
+
+  if (DGM.mode === 'zone' && DGM.zoneDrawing) {
+    const zd = DGM.zoneDrawing;
+    if (Math.abs(zd.w) > 20 && Math.abs(zd.h) > 20) {
+      dgmPushHistory();
+      const colors = ['rgba(0,120,212,0.08)','rgba(80,230,255,0.08)','rgba(63,185,80,0.08)','rgba(255,165,0,0.08)'];
+      DGM.zones.push({
+        id: 'z' + (++DGM.zoneIdSeq),
+        x: Math.min(zd.x, zd.x + zd.w),
+        y: Math.min(zd.y, zd.y + zd.h),
+        w: Math.abs(zd.w),
+        h: Math.abs(zd.h),
+        label: 'Zone ' + DGM.zoneIdSeq,
+        color: colors[(DGM.zoneIdSeq - 1) % colors.length]
+      });
+      dgmUpdateStats();
+    }
+    DGM.zoneDrawing = null;
+    dgmRender();
+    return;
+  }
+
+  if (DGM.dragging) {
+    DGM.dragging = null;
+    dgmRender();
+    return;
+  }
+
+  DGM.panning = false;
+  DGM.panStart = null;
+}
+
+function dgmCanvasClick(e) {
+  if (DGM.mode === 'text') {
+    const pos = dgmCanvasCoords(e);
+    const label = prompt('Enter label text:');
+    if (label) {
+      dgmPushHistory();
+      DGM.nodes.push({
+        id: 'n' + (++DGM.nodeIdSeq),
+        x: pos.x - 40, y: pos.y - 10,
+        label, icon: '📝', abbr: '', color: 'transparent',
+        w: 120, h: 40, isLabel: true
+      });
+      dgmRender();
+      dgmUpdateStats();
+    }
+  }
+}
+
+function dgmCanvasDblClick(e) {
+  const pos = dgmCanvasCoords(e);
+  const hitNode = dgmNodeAt(pos.x, pos.y);
+  if (hitNode) {
+    const newLabel = prompt('Rename node:', hitNode.label);
+    if (newLabel !== null) {
+      dgmPushHistory();
+      hitNode.label = newLabel;
+      dgmRender();
+    }
+  }
+}
+
+function dgmCanvasWheel(e) {
+  e.preventDefault();
+  const client = dgmClientCoords(e);
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  const newZoom = Math.min(3, Math.max(0.2, DGM.zoom * factor));
+  DGM.panX = client.x - (client.x - DGM.panX) * (newZoom / DGM.zoom);
+  DGM.panY = client.y - (client.y - DGM.panY) * (newZoom / DGM.zoom);
+  DGM.zoom = newZoom;
+  dgmRender();
+}
+
+/* ---- Hit testing ---- */
+function dgmNodeAt(x, y) {
+  for (let i = DGM.nodes.length - 1; i >= 0; i--) {
+    const n = DGM.nodes[i];
+    if (x >= n.x && x <= n.x + n.w && y >= n.y && y <= n.y + n.h) return n;
+  }
+  return null;
+}
+
+function dgmZoneAt(x, y) {
+  for (let i = DGM.zones.length - 1; i >= 0; i--) {
+    const z = DGM.zones[i];
+    if (x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h) return z;
+  }
+  return null;
+}
+
+function dgmEdgeAt(x, y) {
+  for (const e of DGM.edges) {
+    const from = DGM.nodes.find(n => n.id === e.from);
+    const to   = DGM.nodes.find(n => n.id === e.to);
+    if (!from || !to) continue;
+    const fx = from.x + from.w / 2, fy = from.y + from.h / 2;
+    const tx = to.x + to.w / 2,   ty = to.y + to.h / 2;
+    // distance from point to line segment
+    const dx = tx - fx, dy = ty - fy;
+    const len2 = dx*dx + dy*dy;
+    if (len2 === 0) continue;
+    let t = ((x - fx) * dx + (y - fy) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const px = fx + t * dx - x, py = fy + t * dy - y;
+    if (Math.sqrt(px*px + py*py) < 8) return e;
+  }
+  return null;
+}
+
+/* ---- Selection ---- */
+function dgmSelect(type, id) {
+  DGM.selected = {type, id};
+  dgmRender();
+  dgmRenderProps();
+}
+
+/* ---- History ---- */
+function dgmPushHistory() {
+  DGM.history.push(JSON.stringify({nodes: DGM.nodes, edges: DGM.edges, zones: DGM.zones}));
+  if (DGM.history.length > 50) DGM.history.shift();
+  DGM.future = [];
+}
+
+function dgmUndo() {
+  if (!DGM.history.length) return;
+  DGM.future.push(JSON.stringify({nodes: DGM.nodes, edges: DGM.edges, zones: DGM.zones}));
+  const snap = JSON.parse(DGM.history.pop());
+  DGM.nodes = snap.nodes; DGM.edges = snap.edges; DGM.zones = snap.zones;
+  DGM.selected = null;
+  dgmRender(); dgmRenderProps(); dgmUpdateStats();
+}
+
+function dgmRedo() {
+  if (!DGM.future.length) return;
+  DGM.history.push(JSON.stringify({nodes: DGM.nodes, edges: DGM.edges, zones: DGM.zones}));
+  const snap = JSON.parse(DGM.future.pop());
+  DGM.nodes = snap.nodes; DGM.edges = snap.edges; DGM.zones = snap.zones;
+  DGM.selected = null;
+  dgmRender(); dgmRenderProps(); dgmUpdateStats();
+}
+
+/* ---- Delete ---- */
+function dgmDeleteSelected() {
+  if (!DGM.selected) return;
+  dgmPushHistory();
+  const {type, id} = DGM.selected;
+  if (type === 'node') {
+    DGM.nodes = DGM.nodes.filter(n => n.id !== id);
+    DGM.edges = DGM.edges.filter(e => e.from !== id && e.to !== id);
+  } else if (type === 'edge') {
+    DGM.edges = DGM.edges.filter(e => e.id !== id);
+  } else if (type === 'zone') {
+    DGM.zones = DGM.zones.filter(z => z.id !== id);
+  }
+  DGM.selected = null;
+  dgmRender(); dgmRenderProps(); dgmUpdateStats();
+}
+
+/* ---- Render ---- */
+function dgmRender() {
+  const svgEl    = document.getElementById('dgm-canvas');
+  const edgesLyr = document.getElementById('dgm-edges-layer');
+  const zonesLyr = document.getElementById('dgm-zones-layer');
+  const nodesLyr = document.getElementById('dgm-nodes-layer');
+  if (!svgEl || !edgesLyr || !zonesLyr || !nodesLyr) return;
+
+  // Apply pan/zoom: transform both SVG and nodes layer identically
+  const t = `translate(${DGM.panX}px,${DGM.panY}px) scale(${DGM.zoom})`;
+  svgEl.style.transform = t;
+  svgEl.style.transformOrigin = '0 0';
+  nodesLyr.style.transform = t;
+  nodesLyr.style.transformOrigin = '0 0';
+
+  // ---- Zones (SVG rects) ----
+  const NS = 'http://www.w3.org/2000/svg';
+  zonesLyr.innerHTML = '';
+  DGM.zones.forEach(z => {
+    const isSel = DGM.selected && DGM.selected.type === 'zone' && DGM.selected.id === z.id;
+    const rect = document.createElementNS(NS, 'rect');
+    rect.setAttribute('x', z.x); rect.setAttribute('y', z.y);
+    rect.setAttribute('width', z.w); rect.setAttribute('height', z.h);
+    rect.setAttribute('fill', z.color || 'rgba(0,120,212,0.07)');
+    rect.setAttribute('stroke', isSel ? '#0078d4' : 'rgba(255,255,255,0.15)');
+    rect.setAttribute('stroke-width', isSel ? 2 : 1.5);
+    rect.setAttribute('stroke-dasharray', '6,3');
+    rect.setAttribute('rx', 10);
+    zonesLyr.appendChild(rect);
+    const txt = document.createElementNS(NS, 'text');
+    txt.setAttribute('x', z.x + 12); txt.setAttribute('y', z.y + 20);
+    txt.setAttribute('fill', 'rgba(255,255,255,0.45)');
+    txt.setAttribute('font-size', '11');
+    txt.setAttribute('font-weight', '700');
+    txt.setAttribute('font-family', 'system-ui,sans-serif');
+    txt.setAttribute('text-transform', 'uppercase');
+    txt.textContent = z.label;
+    zonesLyr.appendChild(txt);
+  });
+  // Zone drawing preview
+  if (DGM.zoneDrawing) {
+    const zd = DGM.zoneDrawing;
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', Math.min(zd.x, zd.x+zd.w));
+    r.setAttribute('y', Math.min(zd.y, zd.y+zd.h));
+    r.setAttribute('width', Math.abs(zd.w)); r.setAttribute('height', Math.abs(zd.h));
+    r.setAttribute('fill', 'rgba(0,120,212,0.07)');
+    r.setAttribute('stroke', '#0078d4'); r.setAttribute('stroke-dasharray', '5,3');
+    r.setAttribute('stroke-width', 1.5); r.setAttribute('rx', 8);
+    zonesLyr.appendChild(r);
+  }
+
+  // ---- Edges (SVG paths) ----
+  edgesLyr.innerHTML = `
+    <marker id="arr"     markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#666"/></marker>
+    <marker id="arr-sel" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0078d4"/></marker>
+    <marker id="arr-rev" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,3 L8,0 L8,6 z" fill="#666"/></marker>
+    <marker id="arr-rev-sel" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,3 L8,0 L8,6 z" fill="#0078d4"/></marker>
+  `;
+
+  DGM.edges.forEach(edge => {
+    const from = DGM.nodes.find(n => n.id === edge.from);
+    const to   = DGM.nodes.find(n => n.id === edge.to);
+    if (!from || !to) return;
+    const isSel = DGM.selected && DGM.selected.type === 'edge' && DGM.selected.id === edge.id;
+    const fx = from.x + from.w/2, fy = from.y + from.h/2;
+    const tx2 = to.x + to.w/2,   ty2 = to.y + to.h/2;
+    const color = isSel ? '#0078d4' : '#556';
+    const dash = edge.style === 'dashed' ? '7,4' : edge.style === 'dotted' ? '2,4' : null;
+    let d;
+    if (edge.style === 'curved') {
+      const mx = (fx + tx2) / 2;
+      d = `M${fx},${fy} C${mx},${fy} ${mx},${ty2} ${tx2},${ty2}`;
+    } else {
+      d = `M${fx},${fy} L${tx2},${ty2}`;
+    }
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', isSel ? 2 : 1.5);
+    path.setAttribute('fill', 'none');
+    if (dash) path.setAttribute('stroke-dasharray', dash);
+    path.setAttribute('marker-end', isSel ? 'url(#arr-sel)' : 'url(#arr)');
+    if (edge.bidir) path.setAttribute('marker-start', isSel ? 'url(#arr-rev-sel)' : 'url(#arr-rev)');
+    path.style.cursor = 'pointer';
+    edgesLyr.appendChild(path);
+    if (edge.label) {
+      const lbl = document.createElementNS(NS, 'text');
+      lbl.setAttribute('x', (fx + tx2)/2); lbl.setAttribute('y', (fy + ty2)/2 - 5);
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.setAttribute('fill', isSel ? '#0078d4' : '#888');
+      lbl.setAttribute('font-size', '10');
+      lbl.setAttribute('font-family', 'system-ui,sans-serif');
+      lbl.textContent = edge.label;
+      edgesLyr.appendChild(lbl);
+    }
+  });
+
+  // Connection preview line
+  if (DGM.connStart && DGM._connPreview) {
+    const from = DGM.nodes.find(n => n.id === DGM.connStart);
+    if (from) {
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', from.x + from.w/2); line.setAttribute('y1', from.y + from.h/2);
+      line.setAttribute('x2', DGM._connPreview.x); line.setAttribute('y2', DGM._connPreview.y);
+      line.setAttribute('stroke', '#0078d4'); line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('stroke-dasharray', '5,3');
+      edgesLyr.appendChild(line);
+    }
+  }
+
+  // ---- Nodes (HTML divs) ----
+  nodesLyr.innerHTML = '';
+  DGM.nodes.forEach(node => {
+    const isSel = DGM.selected && DGM.selected.type === 'node' && DGM.selected.id === node.id;
+    const div = document.createElement('div');
+    div.className = 'dgm-node' + (isSel ? ' selected' : '');
+    if (node.isLabel) {
+      div.style.cssText = `left:${node.x}px;top:${node.y}px;width:auto;height:auto;background:transparent;border:${isSel?'1px dashed #0078d4':'none'};padding:4px 8px;`;
+      div.innerHTML = `<span style="font-size:13px;color:#ccc;">${node.icon||''} ${node.label}</span>`;
+    } else {
+      const accentColor = node.color || '#0078d4';
+      div.style.cssText = `left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px;border-top:3px solid ${accentColor};`;
+      if (isSel) div.style.cssText += `border-color:${accentColor};box-shadow:0 0 0 2px rgba(0,120,212,.3),0 2px 12px rgba(0,0,0,.5);`;
+      div.innerHTML =
+        `<span class="dgm-node-icon">${node.icon}</span>` +
+        `<span class="dgm-node-badge">${node.abbr}</span>` +
+        `<span class="dgm-node-label">${node.label}</span>`;
+    }
+    nodesLyr.appendChild(div);
+  });
+
+  // Update zoom label
+  const zl = document.getElementById('dgm-zoom-label');
+  if (zl) zl.textContent = Math.round(DGM.zoom * 100) + '%';
+
+  dgmRenderMinimap();
+}
+
+function dgmRenderConnPreview(pos) {
+  DGM._connPreview = {x: pos.x, y: pos.y};
+  dgmRender();
+}
+
+/* ---- Properties Panel ---- */
+function dgmRenderProps() {
+  const panel = document.getElementById('dgm-props-body');
+  if (!panel) return;
+  if (!DGM.selected) {
+    panel.innerHTML = '<span style="color:#666;font-size:12px;">Select a node or connection to see properties.</span>';
+    return;
+  }
+  const {type, id} = DGM.selected;
+  const inp = (lbl, val, fn) =>
+    `<div style="margin-bottom:6px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">${lbl}</label>
+     <input value="${val}" oninput="${fn}" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:12px;box-sizing:border-box;"/></div>`;
+  const delBtn = (label) =>
+    `<button onclick="dgmDeleteSelected()" style="background:#c0392b;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:12px;cursor:pointer;margin-top:6px;">🗑 Delete ${label}</button>`;
+
+  if (type === 'node') {
+    const node = DGM.nodes.find(n => n.id === id);
+    if (!node) return;
+    const colorVal = node.color && node.color.startsWith('#') ? node.color : '#0078d4';
+    panel.innerHTML =
+      inp('Label', node.label, `dgmUpdateNodeProp('label',this.value)`) +
+      inp('Icon', node.icon||'', `dgmUpdateNodeProp('icon',this.value)`) +
+      `<div style="margin-bottom:6px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">Accent Color</label>
+       <input type="color" value="${colorVal}" oninput="dgmUpdateNodeProp('color',this.value)" style="width:40px;height:26px;border:none;background:none;cursor:pointer;border-radius:4px;"/></div>` +
+      delBtn('Node');
+  } else if (type === 'edge') {
+    const edge = DGM.edges.find(e => e.id === id);
+    if (!edge) return;
+    // Also sync the static panel fields
+    const styleEl = document.getElementById('dgm-edge-style');
+    const labelEl = document.getElementById('dgm-edge-label');
+    const bidirEl = document.getElementById('dgm-edge-bidirectional');
+    if (styleEl) styleEl.value = edge.style || 'solid';
+    if (labelEl) labelEl.value = edge.label || '';
+    if (bidirEl) bidirEl.checked = !!edge.bidir;
+    panel.innerHTML =
+      `<span style="font-size:12px;color:#ccc;">Connection selected — edit style and label in the Connection Style panel below.</span>` +
+      delBtn('Connection');
+  } else if (type === 'zone') {
+    const zone = DGM.zones.find(z => z.id === id);
+    if (!zone) return;
+    panel.innerHTML =
+      inp('Zone Label', zone.label, `dgmUpdateZoneProp('label',this.value)`) +
+      delBtn('Zone');
+  }
+}
+
+function dgmUpdateNodeProp(prop, val) {
+  const node = DGM.nodes.find(n => DGM.selected && n.id === DGM.selected.id);
+  if (node) { node[prop] = val; dgmRender(); }
+}
+function dgmUpdateZoneProp(prop, val) {
+  const zone = DGM.zones.find(z => DGM.selected && z.id === DGM.selected.id);
+  if (zone) { zone[prop] = val; dgmRender(); }
+}
+function dgmUpdateEdgeStyle() {
+  if (!DGM.selected || DGM.selected.type !== 'edge') return;
+  const edge = DGM.edges.find(e => e.id === DGM.selected.id);
+  const el = document.getElementById('dgm-edge-style');
+  if (edge && el) { edge.style = el.value; dgmRender(); }
+}
+function dgmUpdateEdgeLabel() {
+  if (!DGM.selected || DGM.selected.type !== 'edge') return;
+  const edge = DGM.edges.find(e => e.id === DGM.selected.id);
+  const el = document.getElementById('dgm-edge-label');
+  if (edge && el) { edge.label = el.value; dgmRender(); }
+}
+function dgmUpdateEdgeDir() {
+  if (!DGM.selected || DGM.selected.type !== 'edge') return;
+  const edge = DGM.edges.find(e => e.id === DGM.selected.id);
+  const el = document.getElementById('dgm-edge-bidirectional');
+  if (edge && el) { edge.bidir = el.checked; dgmRender(); }
+}
+
+/* ---- Minimap ---- */
+function dgmRenderMinimap() {
+  const canvas = document.getElementById('dgm-minimap-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  if (!DGM.nodes.length) return;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  DGM.nodes.forEach(n => {
+    minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h);
+  });
+  const pad = 20;
+  const scaleX = (W - pad*2) / (maxX - minX || 1);
+  const scaleY = (H - pad*2) / (maxY - minY || 1);
+  const scale = Math.min(scaleX, scaleY, 1);
+  const ox = pad + ((W - pad*2) - (maxX - minX) * scale) / 2;
+  const oy = pad + ((H - pad*2) - (maxY - minY) * scale) / 2;
+  const tx = (x) => ox + (x - minX) * scale;
+  const ty = (y) => oy + (y - minY) * scale;
+
+  DGM.edges.forEach(e => {
+    const from = DGM.nodes.find(n => n.id === e.from);
+    const to   = DGM.nodes.find(n => n.id === e.to);
+    if (!from || !to) return;
+    ctx.beginPath();
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 0.5;
+    ctx.moveTo(tx(from.x + from.w/2), ty(from.y + from.h/2));
+    ctx.lineTo(tx(to.x + to.w/2),   ty(to.y + to.h/2));
+    ctx.stroke();
+  });
+
+  DGM.nodes.forEach(n => {
+    const isSel = DGM.selected && DGM.selected.type === 'node' && DGM.selected.id === n.id;
+    ctx.fillStyle = isSel ? '#0078d4' : '#334';
+    ctx.fillRect(tx(n.x), ty(n.y), Math.max(3, n.w * scale), Math.max(3, n.h * scale));
+  });
+}
+
+/* ---- Stats ---- */
+function dgmUpdateStats() {
+  const nodes = document.getElementById('dgm-stat-nodes');
+  const edges = document.getElementById('dgm-stat-edges');
+  const zones = document.getElementById('dgm-stat-zones');
+  if (nodes) nodes.textContent = DGM.nodes.length;
+  if (edges) edges.textContent = DGM.edges.length;
+  if (zones) zones.textContent = DGM.zones.length;
+}
+
+/* ---- Auto Layout (force-directed) ---- */
+function dgmAutoLayout() {
+  if (DGM.nodes.length === 0) return;
+  dgmPushHistory();
+  const spacing = 160;
+  const cols = Math.ceil(Math.sqrt(DGM.nodes.length));
+  DGM.nodes.forEach((n, i) => {
+    n.x = (i % cols) * spacing + 40;
+    n.y = Math.floor(i / cols) * spacing + 40;
+  });
+  // Simple spring pass
+  for (let iter = 0; iter < 30; iter++) {
+    DGM.edges.forEach(e => {
+      const a = DGM.nodes.find(n => n.id === e.from);
+      const b = DGM.nodes.find(n => n.id === e.to);
+      if (!a || !b) return;
+      const dx = (b.x + b.w/2) - (a.x + a.w/2);
+      const dy = (b.y + b.h/2) - (a.y + a.h/2);
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const force = (dist - spacing) * 0.05;
+      const mx = dx/dist*force, my = dy/dist*force;
+      a.x += mx; a.y += my; b.x -= mx; b.y -= my;
+    });
+  }
+  dgmRender();
+}
+
+/* ---- Fit View ---- */
+function dgmFitView() {
+  const wrap = document.getElementById('dgm-canvas-wrap');
+  if (!wrap || !DGM.nodes.length) return;
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  DGM.nodes.forEach(n => {
+    minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h);
+  });
+  const pad = 60;
+  DGM.zoom = Math.min(3, Math.max(0.1, Math.min((W - pad*2) / (maxX - minX), (H - pad*2) / (maxY - minY))));
+  DGM.panX = (W - (maxX - minX) * DGM.zoom) / 2 - minX * DGM.zoom;
+  DGM.panY = (H - (maxY - minY) * DGM.zoom) / 2 - minY * DGM.zoom;
+  dgmRender();
+}
+
+/* ---- Clear ---- */
+function dgmClear() {
+  if (!confirm('Clear the entire diagram?')) return;
+  dgmPushHistory();
+  DGM.nodes = []; DGM.edges = []; DGM.zones = [];
+  DGM.selected = null;
+  dgmRender(); dgmRenderProps(); dgmUpdateStats();
+}
+
+/* ---- Export ---- */
+function dgmExport(fmt) {
+  const wrap = document.getElementById('dgm-canvas-wrap');
+  if (fmt === 'json') {
+    const data = JSON.stringify({nodes: DGM.nodes, edges: DGM.edges, zones: DGM.zones, meta: {
+      name: (document.getElementById('dgm-title')||{}).value || 'diagram',
+      author: (document.getElementById('dgm-author')||{}).value || '',
+      version: (document.getElementById('dgm-version')||{}).value || '1.0',
+      date: new Date().toISOString().split('T')[0],
+    }}, null, 2);
+    downloadFile(data, 'azure-diagram.json', 'application/json');
+    return;
+  }
+  if (fmt === 'svg') {
+    const svgStr = dgmBuildSVGString();
+    downloadFile(svgStr, 'azure-diagram.svg', 'image/svg+xml');
+    return;
+  }
+  if (fmt === 'png') {
+    const svgStr = dgmBuildSVGString();
+    const blob = new Blob([svgStr], {type: 'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width * 2; c.height = img.height * 2;
+      const ctx = c.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, img.width, img.height);
+      ctx.drawImage(img, 0, 0);
+      c.toBlob(b => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = 'azure-diagram.png';
+        a.click();
+      }, 'image/png');
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  }
+}
+
+function dgmBuildSVGString() {
+  let minX = 0, minY = 0, maxX = 900, maxY = 600;
+  if (DGM.nodes.length) {
+    minX = Math.min(...DGM.nodes.map(n => n.x)) - 40;
+    minY = Math.min(...DGM.nodes.map(n => n.y)) - 40;
+    maxX = Math.max(...DGM.nodes.map(n => n.x + n.w)) + 40;
+    maxY = Math.max(...DGM.nodes.map(n => n.y + n.h)) + 40;
+  }
+  const W = maxX - minX, H = maxY - minY;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${minX} ${minY} ${W} ${H}">
+<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#0d1117"/>
+<defs>
+  <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#555"/></marker>
+</defs>\n`;
+
+  // Zones
+  DGM.zones.forEach(z => {
+    svg += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${z.color}" stroke="rgba(255,255,255,0.15)" stroke-dasharray="5,3" rx="8"/>\n`;
+    svg += `<text x="${z.x+10}" y="${z.y+20}" fill="rgba(255,255,255,0.4)" font-size="11" font-family="Arial">${z.label}</text>\n`;
+  });
+
+  // Edges
+  DGM.edges.forEach(e => {
+    const from = DGM.nodes.find(n => n.id === e.from);
+    const to   = DGM.nodes.find(n => n.id === e.to);
+    if (!from || !to) return;
+    const fx = from.x + from.w/2, fy = from.y + from.h/2;
+    const tx = to.x + to.w/2,   ty = to.y + to.h/2;
+    const dash = e.style === 'dashed' ? 'stroke-dasharray="6,4"' : e.style === 'dotted' ? 'stroke-dasharray="2,4"' : '';
+    svg += `<line x1="${fx}" y1="${fy}" x2="${tx}" y2="${ty}" stroke="#555" stroke-width="1.5" ${dash} marker-end="url(#arr)"/>\n`;
+    if (e.label) svg += `<text x="${(fx+tx)/2}" y="${(fy+ty)/2-4}" fill="#888" font-size="10" text-anchor="middle" font-family="Arial">${e.label}</text>\n`;
+  });
+
+  // Nodes
+  DGM.nodes.forEach(n => {
+    if (n.isLabel) {
+      svg += `<text x="${n.x+8}" y="${n.y+16}" fill="#ccc" font-size="13" font-family="Arial">${n.label}</text>\n`;
+      return;
+    }
+    svg += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="#161b22" stroke="${n.color||'#0078d4'}" stroke-width="1.5" rx="8"/>\n`;
+    svg += `<text x="${n.x+n.w/2}" y="${n.y+28}" text-anchor="middle" font-size="20" font-family="Arial">${n.icon}</text>\n`;
+    svg += `<text x="${n.x+n.w/2}" y="${n.y+42}" text-anchor="middle" fill="${n.color||'#0078d4'}" font-size="8" font-weight="bold" font-family="Arial">${n.abbr}</text>\n`;
+    svg += `<text x="${n.x+n.w/2}" y="${n.y+56}" text-anchor="middle" fill="#ccc" font-size="9" font-family="Arial">${n.label}</text>\n`;
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+/* ---- Import JSON ---- */
+function dgmImportJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      dgmPushHistory();
+      DGM.nodes = data.nodes || [];
+      DGM.edges = data.edges || [];
+      DGM.zones = data.zones || [];
+      // Sync ID sequences
+      DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt(n.id.replace('n',''))||0), 0);
+      DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt(e.id.replace('e',''))||0), 0);
+      DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt(z.id.replace('z',''))||0), 0);
+      if (data.meta) {
+        const nm = document.getElementById('dgm-title');
+        if (nm) nm.value = data.meta.name || '';
+        const au = document.getElementById('dgm-author');
+        if (au) au.value = data.meta.author || '';
+        const ver = document.getElementById('dgm-version');
+        if (ver) ver.value = data.meta.version || '1.0';
+      }
+      dgmRender(); dgmUpdateStats(); dgmFitView();
+      toast('Diagram loaded!', 'success');
+    } catch(err) { toast('Invalid diagram JSON file', 'error'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+/* ---- Handle Drop Zone ---- */
+function dgmHandleDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  if (file.name.endsWith('.json')) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        dgmPushHistory();
+        DGM.nodes = data.nodes || [];
+        DGM.edges = data.edges || [];
+        DGM.zones = data.zones || [];
+        DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt(n.id.replace('n',''))||0), 0);
+        DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt(e.id.replace('e',''))||0), 0);
+        DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt(z.id.replace('z',''))||0), 0);
+        dgmRender(); dgmUpdateStats(); dgmFitView();
+        toast('Diagram loaded from file!', 'success');
+      } catch(err) { toast('Invalid JSON file', 'error'); }
+    };
+    reader.readAsText(file);
+  } else {
+    toast('Only .json diagram files are supported for drop upload', 'error');
+  }
+}
+
+/* ---- Templates ---- */
+function dgmLoadTemplate(name) {
+  if (DGM.nodes.length > 0 && !confirm('Load template? This will replace the current diagram.')) return;
+  dgmPushHistory();
+  DGM.nodes = []; DGM.edges = []; DGM.zones = [];
+  DGM.nodeIdSeq = DGM.edgeIdSeq = DGM.zoneIdSeq = 0;
+
+  const T = {
+    'hub-spoke': () => {
+      DGM.zones = [{id:'z1',x:60,y:200,w:200,h:220,label:'Hub',color:'rgba(0,120,212,0.08)'},{id:'z2',x:380,y:60,w:180,h:180,label:'Spoke 1',color:'rgba(63,185,80,0.08)'},{id:'z3',x:380,y:280,w:180,h:180,label:'Spoke 2',color:'rgba(255,165,0,0.08)'}];
+      DGM.nodes = [
+        {id:'n1',x:90,y:240,w:80,h:80,label:'Hub VNet',icon:'🌐',abbr:'VNET',color:'#0078d4'},
+        {id:'n2',x:90,y:340,w:80,h:80,label:'Firewall',icon:'🔥',abbr:'AZF',color:'#e74c3c'},
+        {id:'n3',x:420,y:90,w:80,h:80,label:'Spoke 1 VNet',icon:'🌐',abbr:'VNET',color:'#3fb950'},
+        {id:'n4',x:420,y:310,w:80,h:80,label:'Spoke 2 VNet',icon:'🌐',abbr:'VNET',color:'#f39c12'},
+        {id:'n5',x:620,y:90,w:80,h:80,label:'App Service',icon:'⚙️',abbr:'APP',color:'#3fb950'},
+        {id:'n6',x:620,y:310,w:80,h:80,label:'SQL Database',icon:'🗄️',abbr:'SQL',color:'#f39c12'},
+      ];
+      DGM.edges = [
+        {id:'e1',from:'n1',to:'n3',style:'solid',label:'Peering',bidir:true},
+        {id:'e2',from:'n1',to:'n4',style:'solid',label:'Peering',bidir:true},
+        {id:'e3',from:'n1',to:'n2',style:'solid',label:'',bidir:false},
+        {id:'e4',from:'n3',to:'n5',style:'dashed',label:'',bidir:false},
+        {id:'e5',from:'n4',to:'n6',style:'dashed',label:'',bidir:false},
+      ];
+      DGM.zoneIdSeq=3; DGM.nodeIdSeq=6; DGM.edgeIdSeq=5;
+    },
+    'zero-trust': () => {
+      DGM.zones = [{id:'z1',x:40,y:40,w:820,h:120,label:'Identity Perimeter',color:'rgba(0,120,212,0.06)'},{id:'z2',x:40,y:200,w:820,h:300,label:'Application & Data Zone',color:'rgba(63,185,80,0.05)'}];
+      DGM.nodes = [
+        {id:'n1',x:80,y:60,w:80,h:80,label:'Entra ID',icon:'🆔',abbr:'AAD',color:'#0078d4'},
+        {id:'n2',x:220,y:60,w:80,h:80,label:'Conditional Access',icon:'🛡️',abbr:'CA',color:'#0078d4'},
+        {id:'n3',x:360,y:60,w:80,h:80,label:'MFA',icon:'🔐',abbr:'MFA',color:'#0078d4'},
+        {id:'n4',x:80,y:230,w:80,h:80,label:'App Gateway',icon:'🌍',abbr:'AGFW',color:'#3fb950'},
+        {id:'n5',x:220,y:230,w:80,h:80,label:'WAF',icon:'🔒',abbr:'WAF',color:'#e74c3c'},
+        {id:'n6',x:360,y:230,w:80,h:80,label:'API Management',icon:'⚡',abbr:'APIM',color:'#9b59b6'},
+        {id:'n7',x:500,y:230,w:80,h:80,label:'Key Vault',icon:'🗝️',abbr:'KV',color:'#f39c12'},
+        {id:'n8',x:640,y:230,w:80,h:80,label:'Storage',icon:'📦',abbr:'ST',color:'#3fb950'},
+        {id:'n9',x:220,y:390,w:80,h:80,label:'Defender for Cloud',icon:'🛡️',abbr:'MDC',color:'#e74c3c'},
+        {id:'n10',x:360,y:390,w:80,h:80,label:'Sentinel',icon:'👁️',abbr:'SIEM',color:'#e74c3c'},
+      ];
+      DGM.edges = [
+        {id:'e1',from:'n1',to:'n2',style:'solid',label:'',bidir:false},
+        {id:'e2',from:'n2',to:'n3',style:'solid',label:'',bidir:false},
+        {id:'e3',from:'n4',to:'n5',style:'solid',label:'',bidir:false},
+        {id:'e4',from:'n5',to:'n6',style:'solid',label:'',bidir:false},
+        {id:'e5',from:'n6',to:'n7',style:'dashed',label:'secrets',bidir:false},
+        {id:'e6',from:'n6',to:'n8',style:'dashed',label:'',bidir:false},
+        {id:'e7',from:'n9',to:'n10',style:'solid',label:'alerts',bidir:false},
+      ];
+      DGM.zoneIdSeq=2; DGM.nodeIdSeq=10; DGM.edgeIdSeq=7;
+    },
+    'web-app': () => {
+      DGM.nodes = [
+        {id:'n1',x:80,y:240,w:80,h:80,label:'Users',icon:'👥',abbr:'USR',color:'#888'},
+        {id:'n2',x:240,y:240,w:80,h:80,label:'Front Door',icon:'🌍',abbr:'AFD',color:'#0078d4'},
+        {id:'n3',x:400,y:160,w:80,h:80,label:'Static Web App',icon:'🌐',abbr:'SWA',color:'#3fb950'},
+        {id:'n4',x:400,y:320,w:80,h:80,label:'API Management',icon:'⚡',abbr:'APIM',color:'#9b59b6'},
+        {id:'n5',x:560,y:320,w:80,h:80,label:'App Service',icon:'⚙️',abbr:'APP',color:'#0078d4'},
+        {id:'n6',x:720,y:240,w:80,h:80,label:'Azure SQL',icon:'🗄️',abbr:'SQL',color:'#f39c12'},
+        {id:'n7',x:560,y:160,w:80,h:80,label:'CDN',icon:'📡',abbr:'CDN',color:'#50e6ff'},
+        {id:'n8',x:720,y:400,w:80,h:80,label:'Key Vault',icon:'🗝️',abbr:'KV',color:'#f39c12'},
+        {id:'n9',x:400,y:460,w:80,h:80,label:'App Insights',icon:'📊',abbr:'AI',color:'#9b59b6'},
+      ];
+      DGM.edges = [
+        {id:'e1',from:'n1',to:'n2',style:'solid',label:'HTTPS',bidir:false},
+        {id:'e2',from:'n2',to:'n3',style:'solid',label:'',bidir:false},
+        {id:'e3',from:'n2',to:'n4',style:'solid',label:'',bidir:false},
+        {id:'e4',from:'n3',to:'n7',style:'dashed',label:'static',bidir:false},
+        {id:'e5',from:'n4',to:'n5',style:'solid',label:'',bidir:false},
+        {id:'e6',from:'n5',to:'n6',style:'solid',label:'ADO.NET',bidir:false},
+        {id:'e7',from:'n5',to:'n8',style:'dashed',label:'secrets',bidir:false},
+        {id:'e8',from:'n5',to:'n9',style:'dashed',label:'telemetry',bidir:false},
+      ];
+      DGM.nodeIdSeq=9; DGM.edgeIdSeq=8; DGM.zoneIdSeq=0;
+    },
+    'landing-zone': () => {
+      DGM.zones = [
+        {id:'z1',x:40,y:40,w:880,h:130,label:'Platform Subscriptions',color:'rgba(0,120,212,0.07)'},
+        {id:'z2',x:40,y:210,w:880,h:260,label:'Application Workloads',color:'rgba(63,185,80,0.06)'},
+      ];
+      DGM.nodes = [
+        {id:'n1',x:80,y:70,w:80,h:80,label:'Management',icon:'⚙️',abbr:'MGMT',color:'#0078d4'},
+        {id:'n2',x:220,y:70,w:80,h:80,label:'Connectivity',icon:'🌐',abbr:'CONN',color:'#0078d4'},
+        {id:'n3',x:360,y:70,w:80,h:80,label:'Identity',icon:'🆔',abbr:'IDNT',color:'#0078d4'},
+        {id:'n4',x:500,y:70,w:80,h:80,label:'Security',icon:'🔒',abbr:'SEC',color:'#e74c3c'},
+        {id:'n5',x:80,y:250,w:80,h:80,label:'Corp LZ 1',icon:'🏢',abbr:'LZ',color:'#3fb950'},
+        {id:'n6',x:220,y:250,w:80,h:80,label:'Corp LZ 2',icon:'🏢',abbr:'LZ',color:'#3fb950'},
+        {id:'n7',x:360,y:250,w:80,h:80,label:'Online LZ',icon:'🌍',abbr:'OLZ',color:'#f39c12'},
+        {id:'n8',x:500,y:250,w:80,h:80,label:'Sandbox',icon:'🧪',abbr:'SBX',color:'#888'},
+        {id:'n9',x:220,y:380,w:80,h:80,label:'Hub VNet',icon:'🌐',abbr:'VNET',color:'#0078d4'},
+        {id:'n10',x:640,y:150,w:80,h:80,label:'Policy Initiative',icon:'📋',abbr:'POL',color:'#9b59b6'},
+      ];
+      DGM.edges = [
+        {id:'e1',from:'n2',to:'n9',style:'solid',label:'routes',bidir:true},
+        {id:'e2',from:'n9',to:'n5',style:'dashed',label:'peering',bidir:true},
+        {id:'e3',from:'n9',to:'n6',style:'dashed',label:'peering',bidir:true},
+        {id:'e4',from:'n9',to:'n7',style:'dashed',label:'peering',bidir:true},
+        {id:'e5',from:'n10',to:'n5',style:'dotted',label:'apply',bidir:false},
+        {id:'e6',from:'n10',to:'n6',style:'dotted',label:'apply',bidir:false},
+        {id:'e7',from:'n10',to:'n7',style:'dotted',label:'apply',bidir:false},
+      ];
+      DGM.zoneIdSeq=2; DGM.nodeIdSeq=10; DGM.edgeIdSeq=7;
+    }
+  };
+
+  if (T[name]) { T[name](); dgmRender(); dgmUpdateStats(); dgmFitView(); }
+}
+
+// ============================================================
+// COLLAPSIBLE
+// ============================================================
+function toggleCollapsible(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -2871,6 +4179,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initWAF();
   initCost();
   initPolicies();
+  dgmInit();
 });
 
 </script>
