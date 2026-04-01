@@ -1364,16 +1364,11 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
          onclick="dgmCanvasClick(event)"
          onwheel="dgmCanvasWheel(event)">
       <svg id="dgm-canvas" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e"/>
-          </marker>
-          <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#0078d4"/>
-          </marker>
-          <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#50e6ff"/>
-          </marker>
+        <defs id="dgm-defs">
+          <marker id="dgm-arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#667"/></marker>
+          <marker id="dgm-arr-sel" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0078d4"/></marker>
+          <marker id="dgm-arr-rev" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,3 L8,0 L8,6 z" fill="#667"/></marker>
+          <marker id="dgm-arr-rev-sel" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,3 L8,0 L8,6 z" fill="#0078d4"/></marker>
         </defs>
         <g id="dgm-zones-layer"></g>
         <g id="dgm-edges-layer"></g>
@@ -3283,12 +3278,12 @@ function dgmCanvasDrop(e) {
   dgmPushHistory();
   const node = {
     id: 'n' + (++DGM.nodeIdSeq),
-    x: pos.x - 40, y: pos.y - 40,
+    x: pos.x - 50, y: pos.y - 45,
     label: DGM.pendingDrag.label,
     icon: DGM.pendingDrag.icon,
     abbr: DGM.pendingDrag.abbr,
     color: DGM.pendingDrag.color,
-    w: 80, h: 80
+    w: 100, h: 90
   };
   DGM.nodes.push(node);
   DGM.pendingDrag = null;
@@ -3579,102 +3574,108 @@ function dgmRender() {
   const nodesLyr = document.getElementById('dgm-nodes-layer');
   if (!svgEl || !edgesLyr || !zonesLyr || !nodesLyr) return;
 
-  // Apply pan/zoom: transform both SVG and nodes layer identically
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // Apply pan/zoom as CSS transform on both SVG and nodes layer
   const t = `translate(${DGM.panX}px,${DGM.panY}px) scale(${DGM.zoom})`;
   svgEl.style.transform = t;
   svgEl.style.transformOrigin = '0 0';
   nodesLyr.style.transform = t;
   nodesLyr.style.transformOrigin = '0 0';
+  // Ensure nodes layer is anchored at canvas origin; pointer-events none so
+  // mouse events fall through to the canvas-wrap handlers (we do hit-test in JS)
+  nodesLyr.style.position = 'absolute';
+  nodesLyr.style.top = '0';
+  nodesLyr.style.left = '0';
+  nodesLyr.style.pointerEvents = 'none';
 
-  // ---- Zones (SVG rects) ----
-  const NS = 'http://www.w3.org/2000/svg';
-  zonesLyr.innerHTML = '';
+  // ---- Zones ----
+  while (zonesLyr.firstChild) zonesLyr.removeChild(zonesLyr.firstChild);
   DGM.zones.forEach(z => {
     const isSel = DGM.selected && DGM.selected.type === 'zone' && DGM.selected.id === z.id;
     const rect = document.createElementNS(NS, 'rect');
     rect.setAttribute('x', z.x); rect.setAttribute('y', z.y);
-    rect.setAttribute('width', z.w); rect.setAttribute('height', z.h);
+    rect.setAttribute('width', Math.max(1, z.w)); rect.setAttribute('height', Math.max(1, z.h));
     rect.setAttribute('fill', z.color || 'rgba(0,120,212,0.07)');
     rect.setAttribute('stroke', isSel ? '#0078d4' : 'rgba(255,255,255,0.15)');
-    rect.setAttribute('stroke-width', isSel ? 2 : 1.5);
+    rect.setAttribute('stroke-width', isSel ? '2' : '1.5');
     rect.setAttribute('stroke-dasharray', '6,3');
-    rect.setAttribute('rx', 10);
+    rect.setAttribute('rx', '10');
     zonesLyr.appendChild(rect);
     const txt = document.createElementNS(NS, 'text');
     txt.setAttribute('x', z.x + 12); txt.setAttribute('y', z.y + 20);
-    txt.setAttribute('fill', 'rgba(255,255,255,0.45)');
+    txt.setAttribute('fill', 'rgba(255,255,255,0.5)');
     txt.setAttribute('font-size', '11');
     txt.setAttribute('font-weight', '700');
     txt.setAttribute('font-family', 'system-ui,sans-serif');
-    txt.setAttribute('text-transform', 'uppercase');
-    txt.textContent = z.label;
+    txt.textContent = (z.label || '').toUpperCase();
     zonesLyr.appendChild(txt);
   });
-  // Zone drawing preview
   if (DGM.zoneDrawing) {
     const zd = DGM.zoneDrawing;
     const r = document.createElementNS(NS, 'rect');
-    r.setAttribute('x', Math.min(zd.x, zd.x+zd.w));
-    r.setAttribute('y', Math.min(zd.y, zd.y+zd.h));
-    r.setAttribute('width', Math.abs(zd.w)); r.setAttribute('height', Math.abs(zd.h));
-    r.setAttribute('fill', 'rgba(0,120,212,0.07)');
-    r.setAttribute('stroke', '#0078d4'); r.setAttribute('stroke-dasharray', '5,3');
-    r.setAttribute('stroke-width', 1.5); r.setAttribute('rx', 8);
+    r.setAttribute('x', Math.min(zd.x, zd.x + zd.w));
+    r.setAttribute('y', Math.min(zd.y, zd.y + zd.h));
+    r.setAttribute('width', Math.max(1, Math.abs(zd.w)));
+    r.setAttribute('height', Math.max(1, Math.abs(zd.h)));
+    r.setAttribute('fill', 'rgba(0,120,212,0.06)');
+    r.setAttribute('stroke', '#0078d4');
+    r.setAttribute('stroke-dasharray', '5,3');
+    r.setAttribute('stroke-width', '1.5');
+    r.setAttribute('rx', '8');
     zonesLyr.appendChild(r);
   }
 
-  // ---- Edges (SVG paths) ----
-  edgesLyr.innerHTML = `
-    <marker id="arr"     markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#666"/></marker>
-    <marker id="arr-sel" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0078d4"/></marker>
-    <marker id="arr-rev" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,3 L8,0 L8,6 z" fill="#666"/></marker>
-    <marker id="arr-rev-sel" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,3 L8,0 L8,6 z" fill="#0078d4"/></marker>
-  `;
-
+  // ---- Edges ----
+  // Use marker IDs defined in the static <defs id="dgm-defs"> in the HTML
+  while (edgesLyr.firstChild) edgesLyr.removeChild(edgesLyr.firstChild);
   DGM.edges.forEach(edge => {
     const from = DGM.nodes.find(n => n.id === edge.from);
     const to   = DGM.nodes.find(n => n.id === edge.to);
     if (!from || !to) return;
     const isSel = DGM.selected && DGM.selected.type === 'edge' && DGM.selected.id === edge.id;
-    const fx = from.x + from.w/2, fy = from.y + from.h/2;
-    const tx2 = to.x + to.w/2,   ty2 = to.y + to.h/2;
-    const color = isSel ? '#0078d4' : '#556';
+    const nW = from.w || 100, nH = from.h || 90;
+    const tW = to.w || 100,   tH = to.h || 90;
+    const fx = from.x + nW/2, fy = from.y + nH/2;
+    const tx = to.x + tW/2,   ty = to.y + tH/2;
+    const color = isSel ? '#0078d4' : '#4a5568';
     const dash = edge.style === 'dashed' ? '7,4' : edge.style === 'dotted' ? '2,4' : null;
     let d;
     if (edge.style === 'curved') {
-      const mx = (fx + tx2) / 2;
-      d = `M${fx},${fy} C${mx},${fy} ${mx},${ty2} ${tx2},${ty2}`;
+      const mx = (fx + tx) / 2;
+      d = `M${fx},${fy} C${mx},${fy} ${mx},${ty} ${tx},${ty}`;
     } else {
-      d = `M${fx},${fy} L${tx2},${ty2}`;
+      d = `M${fx},${fy} L${tx},${ty}`;
     }
     const path = document.createElementNS(NS, 'path');
     path.setAttribute('d', d);
     path.setAttribute('stroke', color);
-    path.setAttribute('stroke-width', isSel ? 2 : 1.5);
+    path.setAttribute('stroke-width', isSel ? '2' : '1.5');
     path.setAttribute('fill', 'none');
     if (dash) path.setAttribute('stroke-dasharray', dash);
-    path.setAttribute('marker-end', isSel ? 'url(#arr-sel)' : 'url(#arr)');
-    if (edge.bidir) path.setAttribute('marker-start', isSel ? 'url(#arr-rev-sel)' : 'url(#arr-rev)');
+    path.setAttribute('marker-end', isSel ? 'url(#dgm-arr-sel)' : 'url(#dgm-arr)');
+    if (edge.bidir) path.setAttribute('marker-start', isSel ? 'url(#dgm-arr-rev-sel)' : 'url(#dgm-arr-rev)');
     path.style.cursor = 'pointer';
     edgesLyr.appendChild(path);
     if (edge.label) {
       const lbl = document.createElementNS(NS, 'text');
-      lbl.setAttribute('x', (fx + tx2)/2); lbl.setAttribute('y', (fy + ty2)/2 - 5);
+      lbl.setAttribute('x', (fx + tx)/2);
+      lbl.setAttribute('y', (fy + ty)/2 - 6);
       lbl.setAttribute('text-anchor', 'middle');
-      lbl.setAttribute('fill', isSel ? '#0078d4' : '#888');
+      lbl.setAttribute('fill', isSel ? '#0078d4' : '#6b7280');
       lbl.setAttribute('font-size', '10');
       lbl.setAttribute('font-family', 'system-ui,sans-serif');
       lbl.textContent = edge.label;
       edgesLyr.appendChild(lbl);
     }
   });
-
   // Connection preview line
   if (DGM.connStart && DGM._connPreview) {
     const from = DGM.nodes.find(n => n.id === DGM.connStart);
     if (from) {
+      const nW = from.w || 100, nH = from.h || 90;
       const line = document.createElementNS(NS, 'line');
-      line.setAttribute('x1', from.x + from.w/2); line.setAttribute('y1', from.y + from.h/2);
+      line.setAttribute('x1', from.x + nW/2); line.setAttribute('y1', from.y + nH/2);
       line.setAttribute('x2', DGM._connPreview.x); line.setAttribute('y2', DGM._connPreview.y);
       line.setAttribute('stroke', '#0078d4'); line.setAttribute('stroke-width', '1.5');
       line.setAttribute('stroke-dasharray', '5,3');
@@ -3687,20 +3688,23 @@ function dgmRender() {
   DGM.nodes.forEach(node => {
     const isSel = DGM.selected && DGM.selected.type === 'node' && DGM.selected.id === node.id;
     const div = document.createElement('div');
-    div.className = 'dgm-node' + (isSel ? ' selected' : '');
+    const color = node.color || '#0078d4';
+
     if (node.isLabel) {
-      div.style.cssText = `left:${node.x}px;top:${node.y}px;width:auto;height:auto;background:transparent;border:${isSel?'1px dashed #0078d4':'none'};padding:4px 8px;`;
-      div.innerHTML = `<span style="font-size:13px;color:#ccc;">${node.icon||''} ${node.label}</span>`;
+      div.style.cssText = `position:absolute;left:${node.x}px;top:${node.y}px;padding:4px 8px;background:transparent;border:${isSel ? '1px dashed #0078d4' : 'none'};border-radius:4px;cursor:grab;user-select:none;`;
+      div.innerHTML = `<span style="font-size:13px;color:#d1d5db;">${node.label}</span>`;
     } else {
-      const accentColor = node.color || '#0078d4';
-      div.style.cssText = `left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px;border-top:3px solid ${accentColor};`;
-      if (isSel) div.style.cssText += `border-color:${accentColor};box-shadow:0 0 0 2px rgba(0,120,212,.3),0 2px 12px rgba(0,0,0,.5);`;
-      div.innerHTML =
-        `<span class="dgm-node-icon">${node.icon}</span>` +
-        `<span class="dgm-node-badge">${node.abbr}</span>` +
-        `<span class="dgm-node-label">${node.label}</span>`;
+      const selStyle = isSel ? `box-shadow:0 0 0 2px rgba(0,120,212,.4),0 4px 16px rgba(0,0,0,.5);border-color:${color};` : '';
+      div.style.cssText = `position:absolute;left:${node.x}px;top:${node.y}px;width:100px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px 8px;background:#161b22;border:1.5px solid #30363d;border-top:3px solid ${color};border-radius:10px;cursor:grab;user-select:none;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.4);${selStyle}`;
+      // Azure-style icon box: colored square with white abbreviation
+      const abbr = (node.abbr || '').toUpperCase().slice(0, 4);
+      const iconBox = `<div style="width:38px;height:38px;background:${color};border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:${abbr.length > 3 ? 8 : 10}px;font-weight:800;color:#fff;letter-spacing:.02em;font-family:system-ui,sans-serif;">${abbr}</span></div>`;
+      const label = `<span style="font-size:10px;color:#9ca3af;text-align:center;line-height:1.25;word-break:break-word;max-width:84px;">${node.label}</span>`;
+      div.innerHTML = iconBox + label;
     }
     nodesLyr.appendChild(div);
+    // Store actual rendered size for edge calculations
+    node.w = 100; node.h = 90;
   });
 
   // Update zoom label
@@ -3874,7 +3878,7 @@ function dgmAutoLayout() {
 function dgmFitView() {
   const wrap = document.getElementById('dgm-canvas-wrap');
   if (!wrap || !DGM.nodes.length) return;
-  const W = wrap.clientWidth, H = wrap.clientHeight;
+  const W = wrap.clientWidth || 800, H = wrap.clientHeight || 600;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   DGM.nodes.forEach(n => {
     minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
@@ -3974,14 +3978,19 @@ function dgmBuildSVGString() {
 
   // Nodes
   DGM.nodes.forEach(n => {
+    const nw = n.w || 100, nh = n.h || 90;
     if (n.isLabel) {
-      svg += `<text x="${n.x+8}" y="${n.y+16}" fill="#ccc" font-size="13" font-family="Arial">${n.label}</text>\n`;
+      svg += `<text x="${n.x+8}" y="${n.y+16}" fill="#9ca3af" font-size="13" font-family="system-ui,Arial">${n.label}</text>\n`;
       return;
     }
-    svg += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="#161b22" stroke="${n.color||'#0078d4'}" stroke-width="1.5" rx="8"/>\n`;
-    svg += `<text x="${n.x+n.w/2}" y="${n.y+28}" text-anchor="middle" font-size="20" font-family="Arial">${n.icon}</text>\n`;
-    svg += `<text x="${n.x+n.w/2}" y="${n.y+42}" text-anchor="middle" fill="${n.color||'#0078d4'}" font-size="8" font-weight="bold" font-family="Arial">${n.abbr}</text>\n`;
-    svg += `<text x="${n.x+n.w/2}" y="${n.y+56}" text-anchor="middle" fill="#ccc" font-size="9" font-family="Arial">${n.label}</text>\n`;
+    const c = n.color || '#0078d4';
+    const abbr = (n.abbr || '').toUpperCase().slice(0, 4);
+    const fs = abbr.length > 3 ? 8 : 10;
+    svg += `<rect x="${n.x}" y="${n.y}" width="${nw}" height="${nh}" fill="#161b22" stroke="${c}" stroke-width="1.5" rx="10"/>\n`;
+    svg += `<rect x="${n.x}" y="${n.y}" width="${nw}" height="3" fill="${c}" rx="2"/>\n`;
+    svg += `<rect x="${n.x+(nw-38)/2}" y="${n.y+10}" width="38" height="38" fill="${c}" rx="8"/>\n`;
+    svg += `<text x="${n.x+nw/2}" y="${n.y+34}" text-anchor="middle" fill="#fff" font-size="${fs}" font-weight="800" font-family="system-ui,Arial">${abbr}</text>\n`;
+    svg += `<text x="${n.x+nw/2}" y="${n.y+66}" text-anchor="middle" fill="#9ca3af" font-size="9" font-family="system-ui,Arial">${n.label}</text>\n`;
   });
 
   svg += '</svg>';
@@ -3996,25 +4005,34 @@ function dgmImportJSON(input) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data.nodes)) { toast('Invalid diagram file — missing nodes array', 'error'); return; }
       dgmPushHistory();
-      DGM.nodes = data.nodes || [];
+      DGM.nodes = data.nodes;
       DGM.edges = data.edges || [];
       DGM.zones = data.zones || [];
-      // Sync ID sequences
-      DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt(n.id.replace('n',''))||0), 0);
-      DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt(e.id.replace('e',''))||0), 0);
-      DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt(z.id.replace('z',''))||0), 0);
+      DGM.selected = null;
+      // Ensure nodes have required fields and correct dimensions
+      DGM.nodes.forEach(n => { n.w = 100; n.h = 90; });
+      // Sync ID counters
+      DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt((n.id||'').replace(/\D/g,''))||0), 0);
+      DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt((e.id||'').replace(/\D/g,''))||0), 0);
+      DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt((z.id||'').replace(/\D/g,''))||0), 0);
       if (data.meta) {
-        const nm = document.getElementById('dgm-title');
-        if (nm) nm.value = data.meta.name || '';
-        const au = document.getElementById('dgm-author');
-        if (au) au.value = data.meta.author || '';
-        const ver = document.getElementById('dgm-version');
-        if (ver) ver.value = data.meta.version || '1.0';
+        const nm = document.getElementById('dgm-title');  if (nm) nm.value = data.meta.name || '';
+        const au = document.getElementById('dgm-author'); if (au) au.value = data.meta.author || '';
+        const ver = document.getElementById('dgm-version'); if (ver) ver.value = data.meta.version || '1.0';
       }
-      dgmRender(); dgmUpdateStats(); dgmFitView();
-      toast('Diagram loaded!', 'success');
-    } catch(err) { toast('Invalid diagram JSON file', 'error'); }
+      // Reset view then fit
+      DGM.zoom = 1; DGM.panX = 0; DGM.panY = 0;
+      dgmRender();
+      dgmUpdateStats();
+      dgmRenderProps();
+      setTimeout(dgmFitView, 50); // slight delay so canvas has correct dimensions
+      toast('Diagram loaded — ' + DGM.nodes.length + ' nodes', 'success');
+    } catch(err) {
+      console.error('Diagram import error:', err);
+      toast('Could not load diagram: ' + err.message, 'error');
+    }
   };
   reader.readAsText(file);
   input.value = '';
@@ -4032,16 +4050,24 @@ function dgmHandleDrop(e) {
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data.nodes)) { toast('Invalid diagram file', 'error'); return; }
         dgmPushHistory();
-        DGM.nodes = data.nodes || [];
+        DGM.nodes = data.nodes;
         DGM.edges = data.edges || [];
         DGM.zones = data.zones || [];
-        DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt(n.id.replace('n',''))||0), 0);
-        DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt(e.id.replace('e',''))||0), 0);
-        DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt(z.id.replace('z',''))||0), 0);
-        dgmRender(); dgmUpdateStats(); dgmFitView();
-        toast('Diagram loaded from file!', 'success');
-      } catch(err) { toast('Invalid JSON file', 'error'); }
+        DGM.selected = null;
+        DGM.nodes.forEach(n => { n.w = 100; n.h = 90; });
+        DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt((n.id||'').replace(/\D/g,''))||0), 0);
+        DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt((e.id||'').replace(/\D/g,''))||0), 0);
+        DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt((z.id||'').replace(/\D/g,''))||0), 0);
+        DGM.zoom = 1; DGM.panX = 0; DGM.panY = 0;
+        dgmRender(); dgmUpdateStats(); dgmRenderProps();
+        setTimeout(dgmFitView, 50);
+        toast('Diagram loaded — ' + DGM.nodes.length + ' nodes', 'success');
+      } catch(err) {
+        console.error('Diagram drop import error:', err);
+        toast('Could not load diagram: ' + err.message, 'error');
+      }
     };
     reader.readAsText(file);
   } else {
@@ -4060,12 +4086,12 @@ function dgmLoadTemplate(name) {
     'hub-spoke': () => {
       DGM.zones = [{id:'z1',x:60,y:200,w:200,h:220,label:'Hub',color:'rgba(0,120,212,0.08)'},{id:'z2',x:380,y:60,w:180,h:180,label:'Spoke 1',color:'rgba(63,185,80,0.08)'},{id:'z3',x:380,y:280,w:180,h:180,label:'Spoke 2',color:'rgba(255,165,0,0.08)'}];
       DGM.nodes = [
-        {id:'n1',x:90,y:240,w:80,h:80,label:'Hub VNet',icon:'🌐',abbr:'VNET',color:'#0078d4'},
-        {id:'n2',x:90,y:340,w:80,h:80,label:'Firewall',icon:'🔥',abbr:'AZF',color:'#e74c3c'},
-        {id:'n3',x:420,y:90,w:80,h:80,label:'Spoke 1 VNet',icon:'🌐',abbr:'VNET',color:'#3fb950'},
-        {id:'n4',x:420,y:310,w:80,h:80,label:'Spoke 2 VNet',icon:'🌐',abbr:'VNET',color:'#f39c12'},
-        {id:'n5',x:620,y:90,w:80,h:80,label:'App Service',icon:'⚙️',abbr:'APP',color:'#3fb950'},
-        {id:'n6',x:620,y:310,w:80,h:80,label:'SQL Database',icon:'🗄️',abbr:'SQL',color:'#f39c12'},
+        {id:'n1',x:90,y:240,w:100,h:90,label:'Hub VNet',icon:'🌐',abbr:'VNET',color:'#0078d4'},
+        {id:'n2',x:90,y:340,w:100,h:90,label:'Firewall',icon:'🔥',abbr:'AZF',color:'#e74c3c'},
+        {id:'n3',x:420,y:90,w:100,h:90,label:'Spoke 1 VNet',icon:'🌐',abbr:'VNET',color:'#3fb950'},
+        {id:'n4',x:420,y:310,w:100,h:90,label:'Spoke 2 VNet',icon:'🌐',abbr:'VNET',color:'#f39c12'},
+        {id:'n5',x:620,y:90,w:100,h:90,label:'App Service',icon:'⚙️',abbr:'APP',color:'#3fb950'},
+        {id:'n6',x:620,y:310,w:100,h:90,label:'SQL Database',icon:'🗄️',abbr:'SQL',color:'#f39c12'},
       ];
       DGM.edges = [
         {id:'e1',from:'n1',to:'n3',style:'solid',label:'Peering',bidir:true},
@@ -4079,16 +4105,16 @@ function dgmLoadTemplate(name) {
     'zero-trust': () => {
       DGM.zones = [{id:'z1',x:40,y:40,w:820,h:120,label:'Identity Perimeter',color:'rgba(0,120,212,0.06)'},{id:'z2',x:40,y:200,w:820,h:300,label:'Application & Data Zone',color:'rgba(63,185,80,0.05)'}];
       DGM.nodes = [
-        {id:'n1',x:80,y:60,w:80,h:80,label:'Entra ID',icon:'🆔',abbr:'AAD',color:'#0078d4'},
-        {id:'n2',x:220,y:60,w:80,h:80,label:'Conditional Access',icon:'🛡️',abbr:'CA',color:'#0078d4'},
-        {id:'n3',x:360,y:60,w:80,h:80,label:'MFA',icon:'🔐',abbr:'MFA',color:'#0078d4'},
-        {id:'n4',x:80,y:230,w:80,h:80,label:'App Gateway',icon:'🌍',abbr:'AGFW',color:'#3fb950'},
-        {id:'n5',x:220,y:230,w:80,h:80,label:'WAF',icon:'🔒',abbr:'WAF',color:'#e74c3c'},
-        {id:'n6',x:360,y:230,w:80,h:80,label:'API Management',icon:'⚡',abbr:'APIM',color:'#9b59b6'},
-        {id:'n7',x:500,y:230,w:80,h:80,label:'Key Vault',icon:'🗝️',abbr:'KV',color:'#f39c12'},
-        {id:'n8',x:640,y:230,w:80,h:80,label:'Storage',icon:'📦',abbr:'ST',color:'#3fb950'},
-        {id:'n9',x:220,y:390,w:80,h:80,label:'Defender for Cloud',icon:'🛡️',abbr:'MDC',color:'#e74c3c'},
-        {id:'n10',x:360,y:390,w:80,h:80,label:'Sentinel',icon:'👁️',abbr:'SIEM',color:'#e74c3c'},
+        {id:'n1',x:80,y:60,w:100,h:90,label:'Entra ID',icon:'🆔',abbr:'AAD',color:'#0078d4'},
+        {id:'n2',x:220,y:60,w:100,h:90,label:'Conditional Access',icon:'🛡️',abbr:'CA',color:'#0078d4'},
+        {id:'n3',x:360,y:60,w:100,h:90,label:'MFA',icon:'🔐',abbr:'MFA',color:'#0078d4'},
+        {id:'n4',x:80,y:230,w:100,h:90,label:'App Gateway',icon:'🌍',abbr:'AGFW',color:'#3fb950'},
+        {id:'n5',x:220,y:230,w:100,h:90,label:'WAF',icon:'🔒',abbr:'WAF',color:'#e74c3c'},
+        {id:'n6',x:360,y:230,w:100,h:90,label:'API Management',icon:'⚡',abbr:'APIM',color:'#9b59b6'},
+        {id:'n7',x:500,y:230,w:100,h:90,label:'Key Vault',icon:'🗝️',abbr:'KV',color:'#f39c12'},
+        {id:'n8',x:640,y:230,w:100,h:90,label:'Storage',icon:'📦',abbr:'ST',color:'#3fb950'},
+        {id:'n9',x:220,y:390,w:100,h:90,label:'Defender for Cloud',icon:'🛡️',abbr:'MDC',color:'#e74c3c'},
+        {id:'n10',x:360,y:390,w:100,h:90,label:'Sentinel',icon:'👁️',abbr:'SIEM',color:'#e74c3c'},
       ];
       DGM.edges = [
         {id:'e1',from:'n1',to:'n2',style:'solid',label:'',bidir:false},
@@ -4103,15 +4129,15 @@ function dgmLoadTemplate(name) {
     },
     'web-app': () => {
       DGM.nodes = [
-        {id:'n1',x:80,y:240,w:80,h:80,label:'Users',icon:'👥',abbr:'USR',color:'#888'},
-        {id:'n2',x:240,y:240,w:80,h:80,label:'Front Door',icon:'🌍',abbr:'AFD',color:'#0078d4'},
-        {id:'n3',x:400,y:160,w:80,h:80,label:'Static Web App',icon:'🌐',abbr:'SWA',color:'#3fb950'},
-        {id:'n4',x:400,y:320,w:80,h:80,label:'API Management',icon:'⚡',abbr:'APIM',color:'#9b59b6'},
-        {id:'n5',x:560,y:320,w:80,h:80,label:'App Service',icon:'⚙️',abbr:'APP',color:'#0078d4'},
-        {id:'n6',x:720,y:240,w:80,h:80,label:'Azure SQL',icon:'🗄️',abbr:'SQL',color:'#f39c12'},
-        {id:'n7',x:560,y:160,w:80,h:80,label:'CDN',icon:'📡',abbr:'CDN',color:'#50e6ff'},
-        {id:'n8',x:720,y:400,w:80,h:80,label:'Key Vault',icon:'🗝️',abbr:'KV',color:'#f39c12'},
-        {id:'n9',x:400,y:460,w:80,h:80,label:'App Insights',icon:'📊',abbr:'AI',color:'#9b59b6'},
+        {id:'n1',x:80,y:240,w:100,h:90,label:'Users',icon:'👥',abbr:'USR',color:'#888'},
+        {id:'n2',x:240,y:240,w:100,h:90,label:'Front Door',icon:'🌍',abbr:'AFD',color:'#0078d4'},
+        {id:'n3',x:400,y:160,w:100,h:90,label:'Static Web App',icon:'🌐',abbr:'SWA',color:'#3fb950'},
+        {id:'n4',x:400,y:320,w:100,h:90,label:'API Management',icon:'⚡',abbr:'APIM',color:'#9b59b6'},
+        {id:'n5',x:560,y:320,w:100,h:90,label:'App Service',icon:'⚙️',abbr:'APP',color:'#0078d4'},
+        {id:'n6',x:720,y:240,w:100,h:90,label:'Azure SQL',icon:'🗄️',abbr:'SQL',color:'#f39c12'},
+        {id:'n7',x:560,y:160,w:100,h:90,label:'CDN',icon:'📡',abbr:'CDN',color:'#50e6ff'},
+        {id:'n8',x:720,y:400,w:100,h:90,label:'Key Vault',icon:'🗝️',abbr:'KV',color:'#f39c12'},
+        {id:'n9',x:400,y:460,w:100,h:90,label:'App Insights',icon:'📊',abbr:'AI',color:'#9b59b6'},
       ];
       DGM.edges = [
         {id:'e1',from:'n1',to:'n2',style:'solid',label:'HTTPS',bidir:false},
@@ -4131,16 +4157,16 @@ function dgmLoadTemplate(name) {
         {id:'z2',x:40,y:210,w:880,h:260,label:'Application Workloads',color:'rgba(63,185,80,0.06)'},
       ];
       DGM.nodes = [
-        {id:'n1',x:80,y:70,w:80,h:80,label:'Management',icon:'⚙️',abbr:'MGMT',color:'#0078d4'},
-        {id:'n2',x:220,y:70,w:80,h:80,label:'Connectivity',icon:'🌐',abbr:'CONN',color:'#0078d4'},
-        {id:'n3',x:360,y:70,w:80,h:80,label:'Identity',icon:'🆔',abbr:'IDNT',color:'#0078d4'},
-        {id:'n4',x:500,y:70,w:80,h:80,label:'Security',icon:'🔒',abbr:'SEC',color:'#e74c3c'},
-        {id:'n5',x:80,y:250,w:80,h:80,label:'Corp LZ 1',icon:'🏢',abbr:'LZ',color:'#3fb950'},
-        {id:'n6',x:220,y:250,w:80,h:80,label:'Corp LZ 2',icon:'🏢',abbr:'LZ',color:'#3fb950'},
-        {id:'n7',x:360,y:250,w:80,h:80,label:'Online LZ',icon:'🌍',abbr:'OLZ',color:'#f39c12'},
-        {id:'n8',x:500,y:250,w:80,h:80,label:'Sandbox',icon:'🧪',abbr:'SBX',color:'#888'},
-        {id:'n9',x:220,y:380,w:80,h:80,label:'Hub VNet',icon:'🌐',abbr:'VNET',color:'#0078d4'},
-        {id:'n10',x:640,y:150,w:80,h:80,label:'Policy Initiative',icon:'📋',abbr:'POL',color:'#9b59b6'},
+        {id:'n1',x:80,y:70,w:100,h:90,label:'Management',icon:'⚙️',abbr:'MGMT',color:'#0078d4'},
+        {id:'n2',x:220,y:70,w:100,h:90,label:'Connectivity',icon:'🌐',abbr:'CONN',color:'#0078d4'},
+        {id:'n3',x:360,y:70,w:100,h:90,label:'Identity',icon:'🆔',abbr:'IDNT',color:'#0078d4'},
+        {id:'n4',x:500,y:70,w:100,h:90,label:'Security',icon:'🔒',abbr:'SEC',color:'#e74c3c'},
+        {id:'n5',x:80,y:250,w:100,h:90,label:'Corp LZ 1',icon:'🏢',abbr:'LZ',color:'#3fb950'},
+        {id:'n6',x:220,y:250,w:100,h:90,label:'Corp LZ 2',icon:'🏢',abbr:'LZ',color:'#3fb950'},
+        {id:'n7',x:360,y:250,w:100,h:90,label:'Online LZ',icon:'🌍',abbr:'OLZ',color:'#f39c12'},
+        {id:'n8',x:500,y:250,w:100,h:90,label:'Sandbox',icon:'🧪',abbr:'SBX',color:'#888'},
+        {id:'n9',x:220,y:380,w:100,h:90,label:'Hub VNet',icon:'🌐',abbr:'VNET',color:'#0078d4'},
+        {id:'n10',x:640,y:150,w:100,h:90,label:'Policy Initiative',icon:'📋',abbr:'POL',color:'#9b59b6'},
       ];
       DGM.edges = [
         {id:'e1',from:'n2',to:'n9',style:'solid',label:'routes',bidir:true},
@@ -4155,7 +4181,13 @@ function dgmLoadTemplate(name) {
     }
   };
 
-  if (T[name]) { T[name](); dgmRender(); dgmUpdateStats(); dgmFitView(); }
+  if (T[name]) {
+    T[name]();
+    DGM.selected = null;
+    DGM.zoom = 1; DGM.panX = 0; DGM.panY = 0;
+    dgmRender(); dgmUpdateStats(); dgmRenderProps();
+    setTimeout(dgmFitView, 50);
+  }
 }
 
 // ============================================================
