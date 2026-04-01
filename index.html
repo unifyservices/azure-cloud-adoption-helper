@@ -1270,8 +1270,8 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
     <button class="dgm-tool-btn" onclick="dgmExport('png')" title="Export as PNG">⬇ PNG</button>
     <button class="dgm-tool-btn" onclick="dgmExport('svg')" title="Export as SVG">⬇ SVG</button>
     <button class="dgm-tool-btn" onclick="dgmExport('json')" title="Save diagram as JSON">💾 Save JSON</button>
-    <label class="dgm-tool-btn" title="Load saved JSON diagram" style="cursor:pointer">
-      📂 Load JSON <input type="file" id="dgm-load-file" accept=".json" style="display:none" onchange="dgmImportJSON(this)">
+    <label class="dgm-tool-btn" title="Load diagram — supports JSON, draw.io XML (.drawio, .xml)" style="cursor:pointer">
+      📂 Load <input type="file" id="dgm-load-file" accept=".json,.xml,.drawio" style="display:none" onchange="dgmImportFile(this)">
     </label>
     <div class="dgm-tool-sep"></div>
     <button class="dgm-tool-btn" onclick="dgmClear()" title="Clear canvas">✕ Clear</button>
@@ -1284,8 +1284,8 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
        ondragleave="this.classList.remove('drag-over')"
        ondrop="dgmHandleDrop(event)">
     <div style="font-size:28px;margin-bottom:8px">📂</div>
-    <div class="bold mb-4">Drop a JSON diagram here to reload it</div>
-    <div class="text-xs text-muted">Or click to browse — supports previously exported diagram JSON files</div>
+    <div class="bold mb-4">Drop a diagram file here to load it</div>
+    <div class="text-xs text-muted">Supports: exported JSON • draw.io XML (.drawio / .xml)</div>
   </div>
 
   <div style="display:flex;gap:12px;height:700px">
@@ -3740,7 +3740,7 @@ function dgmRenderProps() {
     const colorVal = node.color && node.color.startsWith('#') ? node.color : '#0078d4';
     panel.innerHTML =
       inp('Label', node.label, `dgmUpdateNodeProp('label',this.value)`) +
-      inp('Icon', node.icon||'', `dgmUpdateNodeProp('icon',this.value)`) +
+      inp('Abbr (icon text)', (node.abbr||'').toUpperCase(), `dgmUpdateNodeProp('abbr',this.value)`) +
       `<div style="margin-bottom:6px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">Accent Color</label>
        <input type="color" value="${colorVal}" oninput="dgmUpdateNodeProp('color',this.value)" style="width:40px;height:26px;border:none;background:none;cursor:pointer;border-radius:4px;"/></div>` +
       delBtn('Node');
@@ -3998,6 +3998,173 @@ function dgmBuildSVGString() {
 }
 
 /* ---- Import JSON ---- */
+/* ---- Unified file importer (JSON + draw.io XML) ---- */
+function dgmImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const name = file.name.toLowerCase();
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    if (name.endsWith('.json')) {
+      dgmLoadFromJSON(text);
+    } else if (name.endsWith('.xml') || name.endsWith('.drawio') || text.trimStart().startsWith('<?xml') || text.trimStart().startsWith('<mxGraphModel')) {
+      dgmLoadFromDrawio(text);
+    } else {
+      toast('Unsupported file type. Use .json, .xml, or .drawio', 'error');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+/* ---- Parse draw.io / Diagrams.net XML ---- */
+function dgmLoadFromDrawio(xmlStr) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlStr, 'text/xml');
+    const parseErr = doc.querySelector('parsererror');
+    if (parseErr) { toast('Invalid XML file', 'error'); return; }
+
+    // draw.io may wrap compressed data — look for uncompressed mxGraphModel
+    const model = doc.querySelector('mxGraphModel') || doc.documentElement;
+    const cells = model.querySelectorAll('mxCell');
+
+    // Azure service colour map based on label keywords
+    const colorMap = [
+      {k:/virtual machine|^vm$/i,   c:'#0078d4', a:'VM'},
+      {k:/vnet|virtual network/i,    c:'#50e6ff', a:'VNET'},
+      {k:/subnet/i,                  c:'#30b0c7', a:'SNET'},
+      {k:/firewall/i,                c:'#f85149', a:'FW'},
+      {k:/gateway|vpn/i,             c:'#d29922', a:'GW'},
+      {k:/app service|web app/i,     c:'#3fb950', a:'APP'},
+      {k:/function/i,                c:'#f0a500', a:'FUNC'},
+      {k:/sql|database/i,            c:'#0078d4', a:'SQL'},
+      {k:/cosmos/i,                  c:'#3fb950', a:'CSMS'},
+      {k:/storage|blob/i,            c:'#0078d4', a:'ST'},
+      {k:/key vault/i,               c:'#d29922', a:'KV'},
+      {k:/entra|aad|active dir/i,    c:'#0078d4', a:'AAD'},
+      {k:/defender/i,                c:'#f85149', a:'MDC'},
+      {k:/sentinel/i,                c:'#8957e5', a:'SIEM'},
+      {k:/container|aks|kubernetes/i,c:'#326ce5', a:'AKS'},
+      {k:/load.?balan/i,             c:'#0078d4', a:'LB'},
+      {k:/api.?manag/i,              c:'#f0a500', a:'APIM'},
+      {k:/service.?bus/i,            c:'#0078d4', a:'SBS'},
+      {k:/event.?hub/i,              c:'#3fb950', a:'EH'},
+      {k:/redis/i,                   c:'#f85149', a:'REDIS'},
+      {k:/openai|gpt/i,              c:'#50e6ff', a:'OAI'},
+      {k:/monitor|insights/i,        c:'#9b59b6', a:'MON'},
+      {k:/front.?door|cdn/i,         c:'#0078d4', a:'AFD'},
+      {k:/bastion/i,                 c:'#8957e5', a:'BAS'},
+      {k:/internet|www/i,            c:'#3fb950', a:'WWW'},
+      {k:/on.?prem/i,                c:'#8b949e', a:'OPR'},
+      {k:/user|client|person/i,      c:'#50e6ff', a:'USR'},
+    ];
+
+    function guessService(label) {
+      const lbl = (label || '').trim();
+      for (const {k, c, a} of colorMap) {
+        if (k.test(lbl)) return {color: c, abbr: a};
+      }
+      // Fallback: first 4 chars of label
+      const words = lbl.split(/\s+/);
+      const abbr = words.length > 1
+        ? words.map(w => w[0]).join('').toUpperCase().slice(0, 4)
+        : lbl.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0, 4) || 'SVC';
+      return {color: '#0078d4', abbr};
+    }
+
+    const idMap = {};  // original cell id → our node id
+    const nodes = [], edges = [];
+    let nodeSeq = 0, edgeSeq = 0;
+
+    cells.forEach(cell => {
+      const cid   = cell.getAttribute('id') || '';
+      const value = (cell.getAttribute('value') || cell.getAttribute('label') || '').replace(/<[^>]+>/g, '').trim();
+      const isVertex = cell.getAttribute('vertex') === '1';
+      const isEdge   = cell.getAttribute('edge')   === '1';
+      // Skip root/parent cells (id "0" and "1" in draw.io)
+      if (cid === '0' || cid === '1') return;
+
+      const geom = cell.querySelector('mxGeometry');
+
+      if (isVertex && geom) {
+        const x = parseFloat(geom.getAttribute('x') || 0);
+        const y = parseFloat(geom.getAttribute('y') || 0);
+        const {color, abbr} = guessService(value);
+        const nid = 'n' + (++nodeSeq);
+        idMap[cid] = nid;
+        nodes.push({id: nid, x, y, w: 100, h: 90, label: value || 'Node', abbr, color, icon: ''});
+      } else if (isEdge) {
+        const src = cell.getAttribute('source') || '';
+        const tgt = cell.getAttribute('target') || '';
+        // We'll resolve source/target after all vertices are processed
+        edges.push({_src: src, _tgt: tgt, value, cid});
+        edgeSeq++;
+      }
+    });
+
+    // Resolve edge endpoints
+    const resolvedEdges = edges
+      .filter(e => idMap[e._src] && idMap[e._tgt])
+      .map((e, i) => ({
+        id: 'e' + (i + 1),
+        from: idMap[e._src],
+        to:   idMap[e._tgt],
+        style: 'solid',
+        label: e.value || '',
+        bidir: false,
+      }));
+
+    if (!nodes.length) { toast('No diagram shapes found in this XML file', 'error'); return; }
+
+    dgmPushHistory();
+    DGM.nodes = nodes;
+    DGM.edges = resolvedEdges;
+    DGM.zones = [];
+    DGM.selected = null;
+    DGM.nodeIdSeq = nodeSeq;
+    DGM.edgeIdSeq = resolvedEdges.length;
+    DGM.zoneIdSeq = 0;
+    DGM.zoom = 1; DGM.panX = 0; DGM.panY = 0;
+    dgmRender(); dgmUpdateStats(); dgmRenderProps();
+    setTimeout(dgmFitView, 50);
+    toast('draw.io imported — ' + nodes.length + ' shapes, ' + resolvedEdges.length + ' connections', 'success');
+  } catch(err) {
+    console.error('draw.io import error:', err);
+    toast('Could not parse XML: ' + err.message, 'error');
+  }
+}
+
+/* ---- Load from JSON string ---- */
+function dgmLoadFromJSON(text) {
+  try {
+    const data = JSON.parse(text);
+    if (!Array.isArray(data.nodes)) { toast('Invalid diagram file — missing nodes array', 'error'); return; }
+    dgmPushHistory();
+    DGM.nodes = data.nodes;
+    DGM.edges = data.edges || [];
+    DGM.zones = data.zones || [];
+    DGM.selected = null;
+    DGM.nodes.forEach(n => { n.w = 100; n.h = 90; });
+    DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt((n.id||'').replace(/\D/g,''))||0), 0);
+    DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt((e.id||'').replace(/\D/g,''))||0), 0);
+    DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt((z.id||'').replace(/\D/g,''))||0), 0);
+    if (data.meta) {
+      const nm = document.getElementById('dgm-title');  if (nm) nm.value = data.meta.name || '';
+      const au = document.getElementById('dgm-author'); if (au) au.value = data.meta.author || '';
+      const ver = document.getElementById('dgm-version'); if (ver) ver.value = data.meta.version || '1.0';
+    }
+    DGM.zoom = 1; DGM.panX = 0; DGM.panY = 0;
+    dgmRender(); dgmUpdateStats(); dgmRenderProps();
+    setTimeout(dgmFitView, 50);
+    toast('Diagram loaded — ' + DGM.nodes.length + ' nodes', 'success');
+  } catch(err) {
+    console.error('Diagram import error:', err);
+    toast('Could not load diagram: ' + err.message, 'error');
+  }
+}
+
 function dgmImportJSON(input) {
   const file = input.files[0];
   if (!file) return;
@@ -4045,34 +4212,19 @@ function dgmHandleDrop(e) {
   e.currentTarget.classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
   if (!file) return;
-  if (file.name.endsWith('.json')) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        if (!Array.isArray(data.nodes)) { toast('Invalid diagram file', 'error'); return; }
-        dgmPushHistory();
-        DGM.nodes = data.nodes;
-        DGM.edges = data.edges || [];
-        DGM.zones = data.zones || [];
-        DGM.selected = null;
-        DGM.nodes.forEach(n => { n.w = 100; n.h = 90; });
-        DGM.nodeIdSeq = DGM.nodes.reduce((m, n) => Math.max(m, parseInt((n.id||'').replace(/\D/g,''))||0), 0);
-        DGM.edgeIdSeq = DGM.edges.reduce((m, e) => Math.max(m, parseInt((e.id||'').replace(/\D/g,''))||0), 0);
-        DGM.zoneIdSeq = DGM.zones.reduce((m, z) => Math.max(m, parseInt((z.id||'').replace(/\D/g,''))||0), 0);
-        DGM.zoom = 1; DGM.panX = 0; DGM.panY = 0;
-        dgmRender(); dgmUpdateStats(); dgmRenderProps();
-        setTimeout(dgmFitView, 50);
-        toast('Diagram loaded — ' + DGM.nodes.length + ' nodes', 'success');
-      } catch(err) {
-        console.error('Diagram drop import error:', err);
-        toast('Could not load diagram: ' + err.message, 'error');
-      }
-    };
-    reader.readAsText(file);
-  } else {
-    toast('Only .json diagram files are supported for drop upload', 'error');
-  }
+  const name = file.name.toLowerCase();
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const text = ev.target.result;
+    if (name.endsWith('.json')) {
+      dgmLoadFromJSON(text);
+    } else if (name.endsWith('.xml') || name.endsWith('.drawio') || text.trimStart().startsWith('<?xml') || text.trimStart().startsWith('<mxGraphModel')) {
+      dgmLoadFromDrawio(text);
+    } else {
+      toast('Unsupported file. Drop a .json or draw.io .xml/.drawio file', 'error');
+    }
+  };
+  reader.readAsText(file);
 }
 
 /* ---- Templates ---- */
