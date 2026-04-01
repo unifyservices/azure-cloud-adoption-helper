@@ -1363,7 +1363,7 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
          onmouseup="dgmCanvasMouseUp(event)"
          onclick="dgmCanvasClick(event)"
          onwheel="dgmCanvasWheel(event)">
-      <svg id="dgm-canvas" xmlns="http://www.w3.org/2000/svg">
+      <svg id="dgm-canvas" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
         <defs id="dgm-defs">
           <marker id="dgm-arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#667"/></marker>
           <marker id="dgm-arr-sel" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0078d4"/></marker>
@@ -1438,14 +1438,18 @@ input[type=range] { width: 100%; accent-color: var(--azure); }
       <div class="card" style="padding:12px">
         <div class="card-title" style="font-size:12px">💡 Tips</div>
         <div class="flex-col gap-4 text-xs text-muted">
-          <div>🖱 Drag from palette → canvas</div>
-          <div>🔗 Connect mode: click source, then target node</div>
-          <div>✏️ Double-click a node to rename</div>
-          <div>⬜ Zone mode: draw a group box</div>
-          <div>🖱 Scroll to zoom in/out</div>
-          <div>Space + drag to pan canvas</div>
-          <div>Del to delete selected node</div>
-          <div>Ctrl+Z / Ctrl+Y to undo/redo</div>
+          <div>🖱 Drag from palette → canvas to place nodes</div>
+          <div>🔗 Connect mode: click source then target</div>
+          <div>✏️ Double-click a node to rename it</div>
+          <div>⬜ Zone mode: draw a group/zone box</div>
+          <div>🔍 Scroll to zoom · drag canvas to pan</div>
+          <div>Del key to delete selected item</div>
+          <div>Ctrl+Z / Ctrl+Y to undo / redo</div>
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--text2);">📂 <strong>Upload formats:</strong></div>
+          <div>• Our JSON (exported from this tool)</div>
+          <div>• draw.io / Diagrams.net XML</div>
+          <div>&nbsp;&nbsp;(File → Export → XML in draw.io)</div>
+          <div>• Drag-drop .drawio or .xml file</div>
         </div>
       </div>
     </div>
@@ -3997,25 +4001,43 @@ function dgmBuildSVGString() {
   return svg;
 }
 
-/* ---- Import JSON ---- */
 /* ---- Unified file importer (JSON + draw.io XML) ---- */
 function dgmImportFile(input) {
   const file = input.files[0];
   if (!file) return;
-  const name = file.name.toLowerCase();
   const reader = new FileReader();
   reader.onload = e => {
-    const text = e.target.result;
-    if (name.endsWith('.json')) {
-      dgmLoadFromJSON(text);
-    } else if (name.endsWith('.xml') || name.endsWith('.drawio') || text.trimStart().startsWith('<?xml') || text.trimStart().startsWith('<mxGraphModel')) {
-      dgmLoadFromDrawio(text);
-    } else {
-      toast('Unsupported file type. Use .json, .xml, or .drawio', 'error');
-    }
+    dgmRouteFileContent(e.target.result, file.name);
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+/* Content-first routing — checks what the file CONTAINS, not its extension */
+function dgmRouteFileContent(text, fileName) {
+  const trimmed = text.trimStart();
+  // XML content (draw.io, Visio XML, generic mxGraph)
+  if (trimmed.startsWith('<?xml') || trimmed.startsWith('<mxGraphModel') || trimmed.startsWith('<diagram')) {
+    dgmLoadFromDrawio(text);
+    return;
+  }
+  // JSON content
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    // Could be our JSON or draw.io JSON — try our format first
+    try {
+      const data = JSON.parse(text);
+      // draw.io exports JSON with a "cells" or "mxGraphModel" key
+      if (data.mxGraphModel || data.cells) {
+        toast('draw.io JSON format detected — please export as XML (.drawio) from draw.io for full import support', 'error');
+        return;
+      }
+      dgmLoadFromJSON(text);
+    } catch(err) {
+      toast('Invalid file — not valid JSON or XML', 'error');
+    }
+    return;
+  }
+  toast('Unsupported format. Supported: exported diagram JSON • draw.io XML (.drawio / .xml)', 'error');
 }
 
 /* ---- Parse draw.io / Diagrams.net XML ---- */
@@ -4212,18 +4234,8 @@ function dgmHandleDrop(e) {
   e.currentTarget.classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
   if (!file) return;
-  const name = file.name.toLowerCase();
   const reader = new FileReader();
-  reader.onload = ev => {
-    const text = ev.target.result;
-    if (name.endsWith('.json')) {
-      dgmLoadFromJSON(text);
-    } else if (name.endsWith('.xml') || name.endsWith('.drawio') || text.trimStart().startsWith('<?xml') || text.trimStart().startsWith('<mxGraphModel')) {
-      dgmLoadFromDrawio(text);
-    } else {
-      toast('Unsupported file. Drop a .json or draw.io .xml/.drawio file', 'error');
-    }
-  };
+  reader.onload = ev => dgmRouteFileContent(ev.target.result, file.name);
   reader.readAsText(file);
 }
 
